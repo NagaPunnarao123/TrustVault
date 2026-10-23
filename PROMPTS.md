@@ -149,4 +149,21 @@
   2. `fd33d9d` — `feat: implement multi-tenant models, session authentication, and admin bootstrap`
   3. `febbc74` — `feat: implement authorization engine, private storage, and document sharing`
   4. `00cc43c` — `feat: implement audit logging, admin controls, and dark emerald UI`
-  5. *Upcoming* — `docs: add comprehensive README, STRIDE threat model, and verification report`
+  5. `71e0dd0` — `docs: add comprehensive README, STRIDE threat model, and verification report`
+
+---
+
+## Log Entry 7: CLI Bootstrap DB Schema Auto-Creation Fix
+* **Date & Timestamp:** 2026-10-23 18:07 IST
+* **Problem Discovered:**
+  - When candidate executed `flask bootstrap-admin` directly as their first command, SQLite raised `OperationalError: no such table: tenants` because `db.create_all()` was only invoked within `run.py`.
+* **Fix & Verification:**
+  - Added `db.create_all()` directly inside the `bootstrap_admin` command handler in `app/__init__.py`.
+  - Added dedicated `flask init-db` command.
+  - Re-ran `flask bootstrap-admin` and verified clean output:
+    ```text
+    Created organization 'TrustVault Security Corp' (ID: 1)
+    Created administrator user 'admin@trustvault.local' (ID: 1)
+    Assigned ADMIN role to 'admin@trustvault.local' in organization 'TrustVault Security Corp'
+    Administrator bootstrap complete.
+    ```

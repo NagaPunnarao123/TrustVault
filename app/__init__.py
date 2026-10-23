@@ -89,6 +89,13 @@ def create_app(config_class=None):
         db.session.rollback()
         return render_template('errors/500.html', error=e), 500
 
+    # CLI Command: Initialize Database Schema
+    @app.cli.command('init-db')
+    def init_db():
+        """Initialize the SQLite database schema tables."""
+        db.create_all()
+        click.echo("Initialized database schema.")
+
     # CLI Command: Safe Administrator Bootstrap
     @app.cli.command('bootstrap-admin')
     @click.option('--email', default=None, help='Admin email address')
@@ -99,6 +106,9 @@ def create_app(config_class=None):
         Bootstrap an administrator account and tenant organization securely
         from environment variables or CLI arguments.
         """
+        # Ensure database tables exist before bootstrapping
+        db.create_all()
+
         admin_email = (email or os.environ.get('ADMIN_EMAIL', 'admin@trustvault.local')).strip().lower()
         admin_pass = password or os.environ.get('ADMIN_PASSWORD', 'AdminPass1234!')
         tenant_name = tenant or os.environ.get('ADMIN_TENANT_NAME', 'TrustVault Security Corp')
