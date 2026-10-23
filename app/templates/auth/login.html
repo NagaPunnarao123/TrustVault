@@ -4,11 +4,16 @@
 
 {% block content %}
 <div class="auth-wrapper">
-  <div class="card">
+  <div class="auth-card">
     <div class="auth-header">
-      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🛡️</div>
-      <h1>Sign In to TrustVault</h1>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">Access your organization's secured documents</p>
+      <div class="auth-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-subtitle">Sign in to your organization workspace</p>
     </div>
 
     <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}">
@@ -16,33 +21,35 @@
 
       <div class="form-group">
         {{ form.email.label(class="form-label") }}
-        {{ form.email(class="form-control", placeholder="you@company.com", autofocus=true) }}
+        {{ form.email(class="form-control", placeholder="name@company.com", autofocus=true) }}
         {% for error in form.email.errors %}
           <div class="text-danger">{{ error }}</div>
         {% endfor %}
       </div>
 
       <div class="form-group">
-        {{ form.password.label(class="form-label") }}
-        {{ form.password(class="form-control", placeholder="••••••••") }}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+          {{ form.password.label(class="form-label", style="margin-bottom: 0;") }}
+        </div>
+        {{ form.password(class="form-control", placeholder="••••••••••••") }}
         {% for error in form.password.errors %}
           <div class="text-danger">{{ error }}</div>
         {% endfor %}
       </div>
 
-      <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+      <div class="form-group" style="display: flex; align-items: center; gap: 0.55rem; margin-top: 1rem;">
         {{ form.remember_me() }}
-        {{ form.remember_me.label(style="font-size: 0.88rem; color: var(--text-muted); cursor: pointer;") }}
+        {{ form.remember_me.label(style="font-size: 0.82rem; color: var(--text-secondary); cursor: pointer;") }}
       </div>
 
-      <div style="margin-top: 1.5rem;">
+      <div style="margin-top: 1.75rem;">
         {{ form.submit(class="btn btn-primary", style="width: 100%;") }}
       </div>
     </form>
 
-    <div style="margin-top: 1.5rem; text-align: center; font-size: 0.88rem; color: var(--text-muted);">
-      Don't have an organization account?
-      <a href="{{ url_for('auth.register') }}" style="color: var(--emerald-primary); font-weight: 600; text-decoration: none;">Register here</a>
+    <div style="margin-top: 1.75rem; text-align: center; font-size: 0.85rem; color: var(--text-secondary); border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+      Need a new organization vault?
+      <a href="{{ url_for('auth.register') }}" style="color: var(--emerald-primary); font-weight: 600; text-decoration: none;">Create workspace</a>
     </div>
   </div>
 </div>

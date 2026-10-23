@@ -3,42 +3,78 @@
 {% block title %}Dashboard — TrustVault{% endblock %}
 
 {% block content %}
-<div class="card-header" style="border: none; padding-bottom: 0;">
+<div class="page-header">
   <div>
-    <h1 style="font-size: 1.75rem; font-weight: 700;">Welcome, {{ current_user.full_name }}</h1>
-    <p style="color: var(--text-muted); font-size: 0.95rem;">Organization: <strong style="color: var(--emerald-primary);">{{ tenant.name }}</strong></p>
+    <h1 class="page-title">Overview</h1>
+    <p class="page-subtitle">
+      Logged into <strong style="color: var(--emerald-primary);">{{ tenant.name }}</strong> as <strong>{{ current_user.full_name }}</strong>
+    </p>
   </div>
   <div>
     {% if user_role == 'OWNER' %}
-      <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">+ Upload New Document</a>
+      <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Upload Document
+      </a>
     {% endif %}
   </div>
 </div>
 
 <!-- Stats Grid -->
-<div class="stats-grid" style="margin-top: 1.5rem;">
+<div class="stats-grid">
   {% if user_role in ['OWNER', 'ADMIN'] %}
     <div class="stat-card">
-      <span class="stat-label">My Uploaded Documents</span>
+      <span class="stat-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        My Uploaded Documents
+      </span>
       <span class="stat-value">{{ my_docs_count }}</span>
     </div>
   {% endif %}
+
   <div class="stat-card">
-    <span class="stat-label">Documents Shared With Me</span>
+    <span class="stat-label">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+        <polyline points="16 6 12 2 8 6"/>
+        <line x1="12" y1="2" x2="12" y2="15"/>
+      </svg>
+      Shared With Me
+    </span>
     <span class="stat-value">{{ shared_docs_count }}</span>
   </div>
+
   <div class="stat-card">
-    <span class="stat-label">Active Role</span>
-    <span class="stat-value" style="font-size: 1.35rem; color: #f8fafc;">
-      <span class="badge-role role-{{ user_role }}">{{ user_role }}</span>
+    <span class="stat-label">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      Tenant Access Role
     </span>
+    <div style="margin-top: 0.5rem;">
+      <span class="badge-role role-{{ user_role }}" style="font-size: 0.85rem; padding: 0.25rem 0.65rem;">
+        {{ user_role }}
+      </span>
+    </div>
   </div>
 </div>
 
 <!-- Recent Documents Table -->
 <div class="card">
   <div class="card-header">
-    <h2 class="card-title">Recent Accessible Documents</h2>
+    <h2 class="card-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      Recent Accessible Documents
+    </h2>
     <div style="display: flex; gap: 0.5rem;">
       {% if user_role in ['OWNER', 'ADMIN'] %}
         <a href="{{ url_for('documents.my_documents') }}" class="btn btn-secondary btn-sm">My Documents</a>
@@ -52,32 +88,57 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Document Name</th>
+            <th>Document</th>
             <th>Category</th>
             <th>Size</th>
-            <th>Uploaded By</th>
-            <th>Date</th>
-            <th>Actions</th>
+            <th>Owner</th>
+            <th>Uploaded</th>
+            <th style="text-align: right;">Action</th>
           </tr>
         </thead>
         <tbody>
           {% for doc in recent_docs %}
             <tr>
               <td>
-                <strong>{{ doc.original_filename }}</strong>
-                {% if doc.description %}
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ doc.description }}</div>
-                {% endif %}
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <span class="badge-filetype">{{ doc.file_type }}</span>
+                  <div>
+                    <div style="font-weight: 600; color: var(--text-primary);">{{ doc.original_filename }}</div>
+                    {% if doc.description %}
+                      <div style="font-size: 0.78rem; color: var(--text-secondary);">{{ doc.description }}</div>
+                    {% endif %}
+                  </div>
+                </div>
               </td>
-              <td><span class="badge-role" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-muted);">{{ doc.category }}</span></td>
-              <td>{{ (doc.file_size_bytes / 1024)|round(1) }} KB</td>
-              <td>{{ doc.owner.full_name }}</td>
-              <td>{{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
-              <td>
-                <div style="display: flex; gap: 0.4rem;">
-                  <a href="{{ url_for('documents.download', doc_id=doc.id) }}" class="btn btn-secondary btn-sm">Download</a>
+              <td><span class="badge-category">{{ doc.category }}</span></td>
+              <td style="font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-secondary);">
+                {{ (doc.file_size_bytes / 1024)|round(1) }} KB
+              </td>
+              <td style="font-size: 0.85rem; color: var(--text-secondary);">{{ doc.owner.full_name }}</td>
+              <td style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-tertiary);">
+                {{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}
+              </td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; gap: 0.4rem;">
+                  <a href="{{ url_for('documents.download', doc_id=doc.id) }}" class="btn btn-secondary btn-sm">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download
+                  </a>
                   {% if doc.owner_id == current_user.id %}
-                    <a href="{{ url_for('documents.manage_access', doc_id=doc.id) }}" class="btn btn-primary btn-sm">Share</a>
+                    <a href="{{ url_for('documents.manage_access', doc_id=doc.id) }}" class="btn btn-secondary btn-sm">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"/>
+                        <circle cx="6" cy="12" r="3"/>
+                        <circle cx="18" cy="19" r="3"/>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                      </svg>
+                      Share
+                    </a>
                   {% endif %}
                 </div>
               </td>
@@ -87,15 +148,19 @@
       </table>
     </div>
   {% else %}
-    <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
-      <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No documents available yet.</p>
+    <div style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 0.75rem auto; color: var(--text-tertiary);">
+        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <p style="font-size: 1rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.25rem;">No documents available</p>
       {% if user_role == 'OWNER' %}
-        <p style="font-size: 0.9rem;">Get started by uploading your first document.</p>
-        <div style="margin-top: 1rem;">
-          <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">+ Upload Document</a>
+        <p style="font-size: 0.85rem; color: var(--text-tertiary);">Start by uploading your first document to this workspace.</p>
+        <div style="margin-top: 1.25rem;">
+          <a href="{{ url_for('documents.upload') }}" class="btn btn-primary btn-sm">+ Upload Document</a>
         </div>
       {% else %}
-        <p style="font-size: 0.9rem;">Documents will appear here once an owner shares them with you.</p>
+        <p style="font-size: 0.85rem; color: var(--text-tertiary);">Documents will appear here once an owner shares them with you.</p>
       {% endif %}
     </div>
   {% endif %}

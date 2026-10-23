@@ -1,20 +1,28 @@
 {% extends "base.html" %}
 
-{% block title %}Manage Organization Members — TrustVault{% endblock %}
+{% block title %}Members — TrustVault{% endblock %}
 
 {% block content %}
-<div class="card-header" style="border: none; padding-bottom: 0;">
+<div class="page-header">
   <div>
-    <h1 style="font-size: 1.75rem; font-weight: 700;">Organization Members</h1>
-    <p style="color: var(--text-muted); font-size: 0.95rem;">Manage team members and assigned roles for <strong style="color: var(--emerald-primary);">{{ tenant.name }}</strong></p>
+    <h1 class="page-title">Workspace Members</h1>
+    <p class="page-subtitle">Administer membership and assigned permissions for <strong style="color: var(--emerald-primary);">{{ tenant.name }}</strong></p>
   </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-top: 1.5rem;">
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.75rem; align-items: flex-start;">
   <!-- Add User Card -->
   <div class="card">
     <div class="card-header">
-      <h2 class="card-title" style="font-size: 1.15rem;">Add Member</h2>
+      <h2 class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="19" y1="8" x2="19" y2="14"/>
+          <line x1="22" y1="11" x2="16" y2="11"/>
+        </svg>
+        Add Member
+      </h2>
     </div>
 
     <form method="POST" action="{{ url_for('admin.users') }}">
@@ -22,7 +30,7 @@
 
       <div class="form-group">
         {{ form.full_name.label(class="form-label") }}
-        {{ form.full_name(class="form-control", placeholder="Colleague Full Name") }}
+        {{ form.full_name(class="form-control", placeholder="Full Name") }}
         {% for error in form.full_name.errors %}
           <div class="text-danger">{{ error }}</div>
         {% endfor %}
@@ -30,7 +38,7 @@
 
       <div class="form-group">
         {{ form.email.label(class="form-label") }}
-        {{ form.email(class="form-control", placeholder="colleague@yourcompany.com") }}
+        {{ form.email(class="form-control", placeholder="colleague@company.com") }}
         {% for error in form.email.errors %}
           <div class="text-danger">{{ error }}</div>
         {% endfor %}
@@ -44,55 +52,67 @@
         {% endfor %}
       </div>
 
-      <div style="margin-top: 1.25rem;">
+      <div style="margin-top: 1.5rem;">
         {{ form.submit(class="btn btn-primary", style="width: 100%;") }}
       </div>
     </form>
   </div>
 
   <!-- Members Table -->
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title" style="font-size: 1.15rem;">Current Members ({{ memberships|length }})</h2>
+  <div class="card" style="padding: 0; overflow: hidden;">
+    <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+      <h2 class="card-title" style="margin-bottom: 0;">
+        Current Members ({{ memberships|length }})
+      </h2>
     </div>
 
-    <div class="table-responsive">
+    <div class="table-responsive" style="border: none;">
       <table class="table">
         <thead>
           <tr>
             <th>Member</th>
             <th>Role</th>
             <th>Account Status</th>
-            <th>Actions</th>
+            <th style="text-align: right;">Action</th>
           </tr>
         </thead>
         <tbody>
           {% for m in memberships %}
             <tr>
               <td>
-                <strong>{{ m.user.full_name }}</strong>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ m.user.email }}</div>
+                <div style="font-weight: 600; color: var(--text-primary);">{{ m.user.full_name }}</div>
+                <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-tertiary);">{{ m.user.email }}</div>
               </td>
               <td><span class="badge-role role-{{ m.role }}">{{ m.role }}</span></td>
               <td>
                 {% if m.user.is_active_account %}
-                  <span style="color: var(--emerald-primary); font-size: 0.85rem; font-weight: 600;">● Active</span>
+                  <span style="display: inline-flex; align-items: center; gap: 0.35rem; color: var(--emerald-primary); font-size: 0.82rem; font-weight: 500;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--emerald-primary);"></span>
+                    Active
+                  </span>
                 {% else %}
-                  <span style="color: var(--danger); font-size: 0.85rem; font-weight: 600;">● Deactivated</span>
+                  <span style="display: inline-flex; align-items: center; gap: 0.35rem; color: var(--danger); font-size: 0.82rem; font-weight: 500;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--danger);"></span>
+                    Deactivated
+                  </span>
                 {% endif %}
               </td>
-              <td>
+              <td style="text-align: right;">
                 {% if m.user_id != current_user.id %}
                   <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=m.user_id) }}" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {% if m.user.is_active_account %}
-                      <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Deactivate account for {{ m.user.email }}? They will not be able to log in.');">Deactivate</button>
+                      <button type="submit" class="btn btn-secondary btn-sm" onclick="return confirm('Deactivate {{ m.user.email }}? They will not be able to log in.');">
+                        Deactivate
+                      </button>
                     {% else %}
-                      <button type="submit" class="btn btn-secondary btn-sm">Activate</button>
+                      <button type="submit" class="btn btn-primary btn-sm">
+                        Activate
+                      </button>
                     {% endif %}
                   </form>
                 {% else %}
-                  <span style="font-size: 0.8rem; color: var(--text-subtle);">Current User</span>
+                  <span style="font-size: 0.75rem; color: var(--text-tertiary); font-family: var(--font-mono);">Current User</span>
                 {% endif %}
               </td>
             </tr>

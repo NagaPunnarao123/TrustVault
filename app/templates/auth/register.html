@@ -1,14 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}Create Organization Account — TrustVault{% endblock %}
+{% block title %}Create Organization Vault — TrustVault{% endblock %}
 
 {% block content %}
-<div class="auth-wrapper" style="max-width: 480px;">
-  <div class="card">
+<div class="auth-wrapper" style="max-width: 460px;">
+  <div class="auth-card">
     <div class="auth-header">
-      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏢</div>
-      <h1>Create Account</h1>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">Set up your company workspace and document vault</p>
+      <div class="auth-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <h1 class="auth-title">Create workspace</h1>
+      <p class="auth-subtitle">Initialize an isolated multi-tenant document vault</p>
     </div>
 
     <form method="POST" action="{{ url_for('auth.register') }}">
@@ -24,7 +31,7 @@
 
       <div class="form-group">
         {{ form.email.label(class="form-label") }}
-        {{ form.email(class="form-control", placeholder="jane@acmecorp.com") }}
+        {{ form.email(class="form-control", placeholder="jane@company.com") }}
         {% for error in form.email.errors %}
           <div class="text-danger">{{ error }}</div>
         {% endfor %}
@@ -33,26 +40,28 @@
       <div class="form-group">
         {{ form.organization_name.label(class="form-label") }}
         {{ form.organization_name(class="form-control", placeholder="Acme Technologies Ltd") }}
-        <div class="form-text">This will create a new isolated tenant workspace. You will be registered as OWNER.</div>
+        <div class="form-text">You will be registered as the organization <strong>OWNER</strong>.</div>
         {% for error in form.organization_name.errors %}
           <div class="text-danger">{{ error }}</div>
         {% endfor %}
       </div>
 
-      <div class="form-group">
-        {{ form.password.label(class="form-label") }}
-        {{ form.password(class="form-control", placeholder="Minimum 8 characters") }}
-        {% for error in form.password.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+        <div class="form-group">
+          {{ form.password.label(class="form-label") }}
+          {{ form.password(class="form-control", placeholder="Min 8 chars") }}
+          {% for error in form.password.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
 
-      <div class="form-group">
-        {{ form.confirm_password.label(class="form-label") }}
-        {{ form.confirm_password(class="form-control", placeholder="Re-type password") }}
-        {% for error in form.confirm_password.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
+        <div class="form-group">
+          {{ form.confirm_password.label(class="form-label") }}
+          {{ form.confirm_password(class="form-control", placeholder="Repeat password") }}
+          {% for error in form.confirm_password.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
       </div>
 
       <div style="margin-top: 1.5rem;">
@@ -60,9 +69,9 @@
       </div>
     </form>
 
-    <div style="margin-top: 1.5rem; text-align: center; font-size: 0.88rem; color: var(--text-muted);">
-      Already have an account?
-      <a href="{{ url_for('auth.login') }}" style="color: var(--emerald-primary); font-weight: 600; text-decoration: none;">Sign in here</a>
+    <div style="margin-top: 1.75rem; text-align: center; font-size: 0.85rem; color: var(--text-secondary); border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+      Already have credentials?
+      <a href="{{ url_for('auth.login') }}" style="color: var(--emerald-primary); font-weight: 600; text-decoration: none;">Sign in</a>
     </div>
   </div>
 </div>

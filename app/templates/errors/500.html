@@ -1,15 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}Internal Server Error (500) — TrustVault{% endblock %}
+{% block title %}Server Error (500) — TrustVault{% endblock %}
 
 {% block content %}
 <div class="auth-wrapper" style="text-align: center;">
-  <div class="card" style="padding: 2.5rem 1.5rem;">
-    <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚙️</div>
-    <h1 style="font-size: 1.85rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--danger);">500 — Server Error</h1>
-    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
-      An unexpected internal server error occurred. Transaction rollback has been executed.
-      Sensitive error traces are withheld for security.
+  <div class="auth-card" style="padding: 3rem 2rem;">
+    <div style="width: 56px; height: 56px; margin: 0 auto 1.5rem auto; border-radius: var(--radius-md); background: var(--danger-bg); border: 1px solid var(--danger-border); display: flex; align-items: center; justify-content: center; color: var(--danger);">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </div>
+    <h1 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); letter-spacing: -0.02em;">500 &mdash; Internal Error</h1>
+    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.6;">
+      An unexpected server condition was encountered. Transaction rollback has completed.
+      Detailed trace information is withheld to prevent disclosure.
     </p>
     <a href="{{ url_for('documents.dashboard') }}" class="btn btn-primary">Return to Dashboard</a>
   </div>

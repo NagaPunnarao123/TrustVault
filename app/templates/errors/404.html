@@ -1,14 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}Not Found (404) — TrustVault{% endblock %}
+{% block title %}Resource Not Found (404) — TrustVault{% endblock %}
 
 {% block content %}
 <div class="auth-wrapper" style="text-align: center;">
-  <div class="card" style="padding: 2.5rem 1.5rem;">
-    <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔍</div>
-    <h1 style="font-size: 1.85rem; font-weight: 700; margin-bottom: 0.5rem;">404 — Resource Not Found</h1>
-    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
-      The requested document, route, or resource could not be found or has been removed.
+  <div class="auth-card" style="padding: 3rem 2rem;">
+    <div style="width: 56px; height: 56px; margin: 0 auto 1.5rem auto; border-radius: var(--radius-md); background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-default); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </div>
+    <h1 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); letter-spacing: -0.02em;">404 &mdash; Document Not Found</h1>
+    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.6;">
+      The requested document, resource, or endpoint could not be found or has been deleted.
     </p>
     <a href="{{ url_for('documents.dashboard') }}" class="btn btn-primary">Return to Dashboard</a>
   </div>

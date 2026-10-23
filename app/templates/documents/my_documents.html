@@ -3,81 +3,114 @@
 {% block title %}My Documents — TrustVault{% endblock %}
 
 {% block content %}
-<div class="card-header" style="border: none; padding-bottom: 0;">
+<div class="page-header">
   <div>
-    <h1 style="font-size: 1.75rem; font-weight: 700;">My Documents</h1>
-    <p style="color: var(--text-muted); font-size: 0.95rem;">Manage, share, and administer documents you uploaded</p>
+    <h1 class="page-title">My Documents</h1>
+    <p class="page-subtitle">Manage, share, and administer documents you uploaded to this vault</p>
   </div>
   <div>
     {% if user_role == 'OWNER' %}
-      <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">+ Upload Document</a>
+      <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Upload Document
+      </a>
     {% endif %}
   </div>
 </div>
 
-<!-- Filters Bar -->
-<div class="card" style="margin-top: 1.5rem; padding: 1rem 1.25rem;">
+<!-- Search & Category Filters -->
+<div class="card" style="padding: 1.15rem 1.5rem; margin-bottom: 1.5rem;">
   <form method="GET" action="{{ url_for('documents.my_documents') }}" class="filter-bar" style="margin-bottom: 0;">
     <div class="search-input">
-      <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search documents by name or description...">
+      <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by name or description...">
     </div>
-    <div>
+    <div style="min-width: 180px;">
       <select name="category" class="form-control" onchange="this.form.submit()">
         {% for cat in categories %}
-          <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>Category: {{ cat }}</option>
+          <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>{{ cat }}</option>
         {% endfor %}
       </select>
     </div>
     <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
     {% if search_query or (category_filter and category_filter != 'All') %}
-      <a href="{{ url_for('documents.my_documents') }}" class="btn btn-sm" style="color: var(--text-muted);">Reset</a>
+      <a href="{{ url_for('documents.my_documents') }}" class="btn btn-sm" style="color: var(--text-tertiary);">Clear</a>
     {% endif %}
   </form>
 </div>
 
-<!-- Document List -->
-<div class="card">
+<!-- Documents List -->
+<div class="card" style="padding: 0; overflow: hidden;">
   {% if documents %}
-    <div class="table-responsive">
+    <div class="table-responsive" style="border: none;">
       <table class="table">
         <thead>
           <tr>
-            <th>Document Name</th>
+            <th>Document</th>
             <th>Category</th>
-            <th>Type</th>
             <th>Size</th>
             <th>Uploaded</th>
             <th>Sharing</th>
-            <th>Actions</th>
+            <th style="text-align: right;">Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for doc in documents %}
             <tr>
               <td>
-                <strong>{{ doc.original_filename }}</strong>
-                {% if doc.description %}
-                  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ doc.description }}</div>
-                {% endif %}
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <span class="badge-filetype">{{ doc.file_type }}</span>
+                  <div>
+                    <div style="font-weight: 600; color: var(--text-primary);">{{ doc.original_filename }}</div>
+                    {% if doc.description %}
+                      <div style="font-size: 0.78rem; color: var(--text-secondary);">{{ doc.description }}</div>
+                    {% endif %}
+                  </div>
+                </div>
               </td>
-              <td><span class="badge-role" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-muted);">{{ doc.category }}</span></td>
-              <td><span style="font-size: 0.82rem; font-family: monospace; color: var(--emerald-primary);">{{ doc.file_type }}</span></td>
-              <td>{{ (doc.file_size_bytes / 1024)|round(1) }} KB</td>
-              <td>{{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td><span class="badge-category">{{ doc.category }}</span></td>
+              <td style="font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-secondary);">
+                {{ (doc.file_size_bytes / 1024)|round(1) }} KB
+              </td>
+              <td style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-tertiary);">
+                {{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}
+              </td>
               <td>
-                <span class="badge-role" style="background: rgba(16, 185, 129, 0.1); color: var(--emerald-primary);">
-                  {{ doc.permissions|length }} shared
+                <span style="font-size: 0.82rem; color: var(--emerald-light); font-weight: 500;">
+                  {{ doc.permissions|length }} member{{ 's' if doc.permissions|length != 1 else '' }}
                 </span>
               </td>
-              <td>
-                <div style="display: flex; gap: 0.4rem;">
-                  <a href="{{ url_for('documents.download', doc_id=doc.id) }}" class="btn btn-secondary btn-sm" title="Download file">Download</a>
-                  <a href="{{ url_for('documents.manage_access', doc_id=doc.id) }}" class="btn btn-primary btn-sm" title="Manage permissions">Share</a>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; gap: 0.4rem;">
+                  <a href="{{ url_for('documents.download', doc_id=doc.id) }}" class="btn btn-secondary btn-sm" title="Download">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download
+                  </a>
+                  <a href="{{ url_for('documents.manage_access', doc_id=doc.id) }}" class="btn btn-secondary btn-sm" title="Manage Permissions">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="18" cy="5" r="3"/>
+                      <circle cx="6" cy="12" r="3"/>
+                      <circle cx="18" cy="19" r="3"/>
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                    </svg>
+                    Share
+                  </a>
                   
-                  <!-- Delete Form with CSRF Protection -->
-                  <form method="POST" action="{{ url_for('documents.delete', doc_id=doc.id) }}" onsubmit="return confirm('Are you sure you want to permanently delete this document?');" style="display: inline;">
+                  <form method="POST" action="{{ url_for('documents.delete', doc_id=doc.id) }}" onsubmit="return confirm('Permanently delete this document from the vault?');" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-danger btn-sm" title="Delete document">Delete</button>
+                    <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
                   </form>
                 </div>
               </td>
@@ -87,14 +120,18 @@
       </table>
     </div>
   {% else %}
-    <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
-      <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No documents found.</p>
+    <div style="text-align: center; padding: 3.5rem 1rem; color: var(--text-secondary);">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 0.75rem auto; color: var(--text-tertiary);">
+        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <p style="font-size: 1rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.25rem;">No documents found</p>
       {% if search_query or (category_filter and category_filter != 'All') %}
-        <p style="font-size: 0.9rem;">Try adjusting your search criteria or category filter.</p>
+        <p style="font-size: 0.85rem; color: var(--text-tertiary);">Try adjusting your query or category filter.</p>
       {% else %}
-        <p style="font-size: 0.9rem;">You haven't uploaded any documents yet.</p>
-        <div style="margin-top: 1rem;">
-          <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">+ Upload Document</a>
+        <p style="font-size: 0.85rem; color: var(--text-tertiary);">You haven't uploaded any files yet.</p>
+        <div style="margin-top: 1.25rem;">
+          <a href="{{ url_for('documents.upload') }}" class="btn btn-primary btn-sm">+ Upload Document</a>
         </div>
       {% endif %}
     </div>

@@ -4,16 +4,21 @@
 
 {% block content %}
 <div class="auth-wrapper" style="text-align: center;">
-  <div class="card" style="padding: 2.5rem 1.5rem;">
-    <div style="font-size: 3.5rem; margin-bottom: 1rem;">🚫</div>
-    <h1 style="font-size: 1.85rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--danger);">403 — Access Denied</h1>
-    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
-      You do not have the required permissions or organization membership to view this resource.
-      This rejected access event has been logged for security review.
+  <div class="auth-card" style="padding: 3rem 2rem;">
+    <div style="width: 56px; height: 56px; margin: 0 auto 1.5rem auto; border-radius: var(--radius-md); background: var(--danger-bg); border: 1px solid var(--danger-border); display: flex; align-items: center; justify-content: center; color: var(--danger);">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+      </svg>
+    </div>
+    <h1 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); letter-spacing: -0.02em;">403 &mdash; Access Restricted</h1>
+    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.6;">
+      You do not possess the required permissions or organization membership to view this resource.
+      This rejected access attempt has been logged for security review.
     </p>
     <div style="display: flex; gap: 0.75rem; justify-content: center;">
       <a href="{{ url_for('documents.dashboard') }}" class="btn btn-primary">Return to Dashboard</a>
-      <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">Check Profile</a>
+      <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">Check Permissions</a>
     </div>
   </div>
 </div>

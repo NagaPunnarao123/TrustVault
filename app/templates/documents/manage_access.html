@@ -3,21 +3,36 @@
 {% block title %}Manage Access — {{ document.original_filename }}{% endblock %}
 
 {% block content %}
-<div style="max-width: 760px; margin: 0 auto;">
+<div style="max-width: 800px; margin: 0 auto;">
   <div class="card">
     <div class="card-header">
       <div>
-        <h1 class="card-title">Manage Document Access</h1>
-        <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 0.2rem;">
-          File: <strong style="color: var(--emerald-primary);">{{ document.original_filename }}</strong> ({{ document.category }})
+        <h1 class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          Document Access Permissions
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+          Target: <strong style="color: var(--emerald-primary);">{{ document.original_filename }}</strong> &bull; Organization: <strong>{{ document.tenant.name }}</strong>
         </p>
       </div>
-      <a href="{{ url_for('documents.my_documents') }}" class="btn btn-secondary btn-sm">&larr; Back to My Documents</a>
+      <a href="{{ url_for('documents.my_documents') }}" class="btn btn-secondary btn-sm">&larr; Back</a>
     </div>
 
     <!-- Grant Access Form -->
-    <div style="margin-bottom: 2rem;">
-      <h2 style="font-size: 1.1rem; margin-bottom: 0.85rem;">Grant Access to Colleague</h2>
+    <div style="background: var(--bg-elevated); border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 2rem;">
+      <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.35rem; color: var(--text-primary);">
+        Grant Access to Colleague
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Recipients must be registered members of <strong>{{ document.tenant.name }}</strong>. Cross-organization access is strictly blocked.
+      </div>
+
       <form method="POST" action="{{ url_for('documents.manage_access', doc_id=document.id) }}">
         {{ form.hidden_tag() }}
 
@@ -27,7 +42,6 @@
             {% for error in form.recipient_email.errors %}
               <div class="text-danger">{{ error }}</div>
             {% endfor %}
-            <div class="form-text">Recipient must be a registered member of <strong>{{ document.tenant.name }}</strong>. Cross-organization sharing is prohibited.</div>
           </div>
           <div>
             {{ form.submit(class="btn btn-primary") }}
@@ -37,28 +51,40 @@
     </div>
 
     <!-- Currently Authorized Users -->
-    <h2 style="font-size: 1.1rem; margin-bottom: 0.85rem;">Currently Authorized Users</h2>
+    <div style="font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.85rem; display: flex; align-items: center; justify-content: space-between;">
+      <span>Authorized Colleagues</span>
+      <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">
+        {{ permissions|length }} active grant{{ 's' if permissions|length != 1 else '' }}
+      </span>
+    </div>
+
     {% if permissions %}
-      <div class="table-responsive">
+      <div class="table-responsive" style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
         <table class="table">
           <thead>
             <tr>
               <th>Colleague</th>
               <th>Email</th>
-              <th>Granted At</th>
-              <th>Action</th>
+              <th>Granted On</th>
+              <th style="text-align: right;">Action</th>
             </tr>
           </thead>
           <tbody>
             {% for perm in permissions %}
               <tr>
                 <td><strong>{{ perm.user.full_name }}</strong></td>
-                <td>{{ perm.user.email }}</td>
-                <td>{{ perm.granted_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td>
-                  <form method="POST" action="{{ url_for('documents.revoke_access', doc_id=document.id, user_id=perm.user_id) }}" onsubmit="return confirm('Revoke access for {{ perm.user.full_name }}? Future downloads will be immediately blocked.');">
+                <td style="font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-secondary);">
+                  {{ perm.user.email }}
+                </td>
+                <td style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-tertiary);">
+                  {{ perm.granted_at.strftime('%Y-%m-%d %H:%M') }}
+                </td>
+                <td style="text-align: right;">
+                  <form method="POST" action="{{ url_for('documents.revoke_access', doc_id=document.id, user_id=perm.user_id) }}" onsubmit="return confirm('Revoke access for {{ perm.user.full_name }}? Downloads will be immediately cut off.');">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-danger btn-sm">Revoke Access</button>
+                    <button type="submit" class="btn btn-danger btn-sm">
+                      Revoke Access
+                    </button>
                   </form>
                 </td>
               </tr>
@@ -67,18 +93,21 @@
         </table>
       </div>
     {% else %}
-      <div style="padding: 1.5rem; background-color: var(--bg-secondary); border-radius: var(--radius-sm); color: var(--text-muted); text-align: center;">
-        This document has not been shared with any colleagues yet. Only you have access.
+      <div style="padding: 2rem; background: var(--bg-elevated); border: 1px dashed var(--border-default); border-radius: var(--radius-md); text-align: center; color: var(--text-secondary); font-size: 0.88rem;">
+        This document is private to you. No colleagues have been granted access yet.
       </div>
     {% endif %}
 
-    <!-- Security & Accountability Notice -->
-    <div style="margin-top: 2rem; padding: 1rem; background-color: var(--bg-secondary); border-left: 3px solid var(--warning); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
-      <div style="font-size: 0.85rem; color: #fcd34d; font-weight: 600; margin-bottom: 0.25rem;">
-        ⚠️ Revocation Notice & Technical Reality:
-      </div>
-      <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
-        Revoking access takes effect <strong>immediately</strong> for all future requests through the application. However, please note that revoking application permissions cannot remotely delete or recall files that the user already downloaded to their physical device.
+    <!-- Technical Boundary Notice -->
+    <div class="notice-box notice-warning" style="margin-top: 2rem;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: var(--warning); margin-top: 2px;">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <div>
+        <strong style="color: var(--text-primary); display: block; margin-bottom: 0.2rem;">Immediate Revocation Notice</strong>
+        Revoking access takes effect <strong>instantly</strong> for all future downloads through the application. Note that revocation cannot recall or erase files that the user already downloaded to their local disk.
       </div>
     </div>
   </div>
