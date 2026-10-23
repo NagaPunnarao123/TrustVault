@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Logs — TrustVault{% endblock %}
+
+{% block content %}
+<div class="card-header" style="border: none; padding-bottom: 0;">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 700;">Security Audit Logs</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Verifiable compliance trail for organization <strong style="color: var(--emerald-primary);">{{ tenant.name }}</strong></p>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card" style="margin-top: 1.5rem; padding: 1rem 1.25rem;">
+  <form method="GET" action="{{ url_for('admin.audit_logs') }}" class="filter-bar" style="margin-bottom: 0;">
+    <div>
+      <select name="action" class="form-control" onchange="this.form.submit()">
+        {% for a in actions %}
+          <option value="{{ a }}" {% if action_filter == a %}selected{% endif %}>Action: {{ a }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <select name="status" class="form-control" onchange="this.form.submit()">
+        {% for s in statuses %}
+          <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>Status: {{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+    {% if action_filter or status_filter %}
+      <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm" style="color: var(--text-muted);">Reset</a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Audit Events Table -->
+<div class="card">
+  {% if events %}
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Timestamp (UTC)</th>
+            <th>Action</th>
+            <th>Status</th>
+            <th>Actor</th>
+            <th>Resource</th>
+            <th>IP Address</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ev in events %}
+            <tr>
+              <td style="white-space: nowrap; font-size: 0.82rem; font-family: monospace; color: var(--text-muted);">
+                {{ ev.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+              </td>
+              <td>
+                <span class="badge-role" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-main);">
+                  {{ ev.action }}
+                </span>
+              </td>
+              <td>
+                {% if ev.status == 'SUCCESS' %}
+                  <span class="badge-role" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #065f46;">SUCCESS</span>
+                {% elif ev.status == 'DENIED' %}
+                  <span class="badge-role" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #7f1d1d;">DENIED</span>
+                {% else %}
+                  <span class="badge-role" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #78350f;">FAILURE</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if ev.user %}
+                  <strong>{{ ev.user.full_name }}</strong>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">{{ ev.user.email }}</div>
+                {% else %}
+                  <span style="color: var(--text-subtle);">System / Anonymous</span>
+                {% endif %}
+              </td>
+              <td>
+                <span style="font-size: 0.82rem; font-family: monospace;">
+                  {{ ev.resource_type }}{% if ev.resource_id %}: #{{ ev.resource_id }}{% endif %}
+                </span>
+              </td>
+              <td style="font-size: 0.82rem; font-family: monospace; color: var(--text-muted);">
+                {{ ev.ip_address or '—' }}
+              </td>
+              <td style="font-size: 0.82rem; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ ev.details }}">
+                {{ ev.details }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+      No audit records found matching the selected criteria.
+    </div>
+  {% endif %}
+
+  <!-- Tamper Boundary Documentation Notice -->
+  <div style="margin-top: 1.5rem; padding: 0.85rem; background-color: var(--bg-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+    <div style="font-size: 0.8rem; color: var(--text-subtle); line-height: 1.5;">
+      🛡️ <strong>Compliance & Integrity Boundary Notice:</strong> Audit events are generated server-side on every security-sensitive operation. While application routes enforce append-only constraints, database records are not inherently tamper-proof against direct administrative modification on the database server itself. In enterprise production, records should be streamed to an external write-once-read-many (WORM) log sink.
+    </div>
+  </div>
+</div>
+{% endblock %}

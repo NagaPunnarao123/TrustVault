@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Access — {{ document.original_filename }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 760px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h1 class="card-title">Manage Document Access</h1>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 0.2rem;">
+          File: <strong style="color: var(--emerald-primary);">{{ document.original_filename }}</strong> ({{ document.category }})
+        </p>
+      </div>
+      <a href="{{ url_for('documents.my_documents') }}" class="btn btn-secondary btn-sm">&larr; Back to My Documents</a>
+    </div>
+
+    <!-- Grant Access Form -->
+    <div style="margin-bottom: 2rem;">
+      <h2 style="font-size: 1.1rem; margin-bottom: 0.85rem;">Grant Access to Colleague</h2>
+      <form method="POST" action="{{ url_for('documents.manage_access', doc_id=document.id) }}">
+        {{ form.hidden_tag() }}
+
+        <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+          <div style="flex: 1;">
+            {{ form.recipient_email(class="form-control", placeholder="colleague@yourcompany.com") }}
+            {% for error in form.recipient_email.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+            <div class="form-text">Recipient must be a registered member of <strong>{{ document.tenant.name }}</strong>. Cross-organization sharing is prohibited.</div>
+          </div>
+          <div>
+            {{ form.submit(class="btn btn-primary") }}
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Currently Authorized Users -->
+    <h2 style="font-size: 1.1rem; margin-bottom: 0.85rem;">Currently Authorized Users</h2>
+    {% if permissions %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Colleague</th>
+              <th>Email</th>
+              <th>Granted At</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for perm in permissions %}
+              <tr>
+                <td><strong>{{ perm.user.full_name }}</strong></td>
+                <td>{{ perm.user.email }}</td>
+                <td>{{ perm.granted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                  <form method="POST" action="{{ url_for('documents.revoke_access', doc_id=document.id, user_id=perm.user_id) }}" onsubmit="return confirm('Revoke access for {{ perm.user.full_name }}? Future downloads will be immediately blocked.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger btn-sm">Revoke Access</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="padding: 1.5rem; background-color: var(--bg-secondary); border-radius: var(--radius-sm); color: var(--text-muted); text-align: center;">
+        This document has not been shared with any colleagues yet. Only you have access.
+      </div>
+    {% endif %}
+
+    <!-- Security & Accountability Notice -->
+    <div style="margin-top: 2rem; padding: 1rem; background-color: var(--bg-secondary); border-left: 3px solid var(--warning); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
+      <div style="font-size: 0.85rem; color: #fcd34d; font-weight: 600; margin-bottom: 0.25rem;">
+        ⚠️ Revocation Notice & Technical Reality:
+      </div>
+      <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+        Revoking access takes effect <strong>immediately</strong> for all future requests through the application. However, please note that revoking application permissions cannot remotely delete or recall files that the user already downloaded to their physical device.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

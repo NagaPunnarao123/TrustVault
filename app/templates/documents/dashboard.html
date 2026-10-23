@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — TrustVault{% endblock %}
+
+{% block content %}
+<div class="card-header" style="border: none; padding-bottom: 0;">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 700;">Welcome, {{ current_user.full_name }}</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Organization: <strong style="color: var(--emerald-primary);">{{ tenant.name }}</strong></p>
+  </div>
+  <div>
+    {% if user_role == 'OWNER' %}
+      <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">+ Upload New Document</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid" style="margin-top: 1.5rem;">
+  {% if user_role in ['OWNER', 'ADMIN'] %}
+    <div class="stat-card">
+      <span class="stat-label">My Uploaded Documents</span>
+      <span class="stat-value">{{ my_docs_count }}</span>
+    </div>
+  {% endif %}
+  <div class="stat-card">
+    <span class="stat-label">Documents Shared With Me</span>
+    <span class="stat-value">{{ shared_docs_count }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Active Role</span>
+    <span class="stat-value" style="font-size: 1.35rem; color: #f8fafc;">
+      <span class="badge-role role-{{ user_role }}">{{ user_role }}</span>
+    </span>
+  </div>
+</div>
+
+<!-- Recent Documents Table -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Recent Accessible Documents</h2>
+    <div style="display: flex; gap: 0.5rem;">
+      {% if user_role in ['OWNER', 'ADMIN'] %}
+        <a href="{{ url_for('documents.my_documents') }}" class="btn btn-secondary btn-sm">My Documents</a>
+      {% endif %}
+      <a href="{{ url_for('documents.shared_with_me') }}" class="btn btn-secondary btn-sm">Shared With Me</a>
+    </div>
+  </div>
+
+  {% if recent_docs %}
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Document Name</th>
+            <th>Category</th>
+            <th>Size</th>
+            <th>Uploaded By</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for doc in recent_docs %}
+            <tr>
+              <td>
+                <strong>{{ doc.original_filename }}</strong>
+                {% if doc.description %}
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ doc.description }}</div>
+                {% endif %}
+              </td>
+              <td><span class="badge-role" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-muted);">{{ doc.category }}</span></td>
+              <td>{{ (doc.file_size_bytes / 1024)|round(1) }} KB</td>
+              <td>{{ doc.owner.full_name }}</td>
+              <td>{{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td>
+                <div style="display: flex; gap: 0.4rem;">
+                  <a href="{{ url_for('documents.download', doc_id=doc.id) }}" class="btn btn-secondary btn-sm">Download</a>
+                  {% if doc.owner_id == current_user.id %}
+                    <a href="{{ url_for('documents.manage_access', doc_id=doc.id) }}" class="btn btn-primary btn-sm">Share</a>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+      <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No documents available yet.</p>
+      {% if user_role == 'OWNER' %}
+        <p style="font-size: 0.9rem;">Get started by uploading your first document.</p>
+        <div style="margin-top: 1rem;">
+          <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">+ Upload Document</a>
+        </div>
+      {% else %}
+        <p style="font-size: 0.9rem;">Documents will appear here once an owner shares them with you.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

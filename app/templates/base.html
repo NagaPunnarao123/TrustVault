@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}TrustVault — Secure Sharing & Verifiable Access{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="navbar">
+    <div style="display: flex; align-items: center; gap: 1.5rem;">
+      <a href="{{ url_for('documents.dashboard') if current_user.is_authenticated else url_for('auth.login') }}" class="nav-brand">
+        <span class="brand-icon">🛡️</span>
+        <span>TrustVault</span>
+      </a>
+
+      {% if current_user.is_authenticated and active_tenant %}
+        <span class="tenant-badge" title="Active Organization">
+          🏢 {{ active_tenant.name }}
+          {% if user_role %}
+            <span class="badge-role role-{{ user_role }}">{{ user_role }}</span>
+          {% endif %}
+        </span>
+      {% endif %}
+    </div>
+
+    <ul class="nav-links">
+      {% if current_user.is_authenticated %}
+        <li><a href="{{ url_for('documents.dashboard') }}" class="nav-link">Dashboard</a></li>
+        
+        {% if user_role in ['OWNER', 'ADMIN'] %}
+          <li><a href="{{ url_for('documents.my_documents') }}" class="nav-link">My Documents</a></li>
+        {% endif %}
+
+        <li><a href="{{ url_for('documents.shared_with_me') }}" class="nav-link">Shared With Me</a></li>
+
+        {% if user_role == 'OWNER' %}
+          <li><a href="{{ url_for('documents.upload') }}" class="btn btn-primary btn-sm">+ Upload</a></li>
+        {% endif %}
+
+        {% if user_role == 'ADMIN' %}
+          <li><a href="{{ url_for('admin.users') }}" class="nav-link">Members</a></li>
+          <li><a href="{{ url_for('admin.audit_logs') }}" class="nav-link">Audit Logs</a></li>
+        {% endif %}
+
+        <li><a href="{{ url_for('auth.profile') }}" class="nav-link">Profile</a></li>
+        <li><a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-sm">Log Out</a></li>
+      {% else %}
+        <li><a href="{{ url_for('auth.login') }}" class="nav-link">Sign In</a></li>
+        <li><a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Get Started</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <!-- Flash Alerts -->
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>TrustVault &bull; Secure Sharing, Smarter Access, Verifiable Accountability &bull; Snovasys Fresher Challenge 2026</p>
+  </footer>
+
+</body>
+</html>

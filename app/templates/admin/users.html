@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Organization Members — TrustVault{% endblock %}
+
+{% block content %}
+<div class="card-header" style="border: none; padding-bottom: 0;">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 700;">Organization Members</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Manage team members and assigned roles for <strong style="color: var(--emerald-primary);">{{ tenant.name }}</strong></p>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-top: 1.5rem;">
+  <!-- Add User Card -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title" style="font-size: 1.15rem;">Add Member</h2>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin.users') }}">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.full_name.label(class="form-label") }}
+        {{ form.full_name(class="form-control", placeholder="Colleague Full Name") }}
+        {% for error in form.full_name.errors %}
+          <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.email.label(class="form-label") }}
+        {{ form.email(class="form-control", placeholder="colleague@yourcompany.com") }}
+        {% for error in form.email.errors %}
+          <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.role.label(class="form-label") }}
+        {{ form.role(class="form-control") }}
+        {% for error in form.role.errors %}
+          <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div style="margin-top: 1.25rem;">
+        {{ form.submit(class="btn btn-primary", style="width: 100%;") }}
+      </div>
+    </form>
+  </div>
+
+  <!-- Members Table -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title" style="font-size: 1.15rem;">Current Members ({{ memberships|length }})</h2>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Role</th>
+            <th>Account Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in memberships %}
+            <tr>
+              <td>
+                <strong>{{ m.user.full_name }}</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ m.user.email }}</div>
+              </td>
+              <td><span class="badge-role role-{{ m.role }}">{{ m.role }}</span></td>
+              <td>
+                {% if m.user.is_active_account %}
+                  <span style="color: var(--emerald-primary); font-size: 0.85rem; font-weight: 600;">● Active</span>
+                {% else %}
+                  <span style="color: var(--danger); font-size: 0.85rem; font-weight: 600;">● Deactivated</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if m.user_id != current_user.id %}
+                  <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=m.user_id) }}" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% if m.user.is_active_account %}
+                      <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Deactivate account for {{ m.user.email }}? They will not be able to log in.');">Deactivate</button>
+                    {% else %}
+                      <button type="submit" class="btn btn-secondary btn-sm">Activate</button>
+                    {% endif %}
+                  </form>
+                {% else %}
+                  <span style="font-size: 0.8rem; color: var(--text-subtle);">Current User</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
