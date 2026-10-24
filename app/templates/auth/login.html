@@ -62,15 +62,15 @@
     </div>
 
     <!-- Right: Visual Hero Column -->
-    <div style="position: relative; background: #0A0F15; border-left: 1px solid var(--border-default); display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; min-height: 480px;">
+    <div style="position: relative; background: var(--bg-elevated); border-left: 1px solid var(--border-default); display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; min-height: 480px;">
       <img src="{{ url_for('static', filename='images/trustvault_hero.jpg') }}" alt="Cryptographic Document Vault" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
       
       <!-- Gradient Overlay for Contrast -->
-      <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 11, 15, 0.2) 0%, rgba(8, 11, 15, 0.85) 75%, #080B0F 100%);"></div>
+      <div style="position: absolute; inset: 0; background: var(--hero-col-overlay);"></div>
 
       <!-- Feature Highlights -->
       <div style="position: relative; z-index: 2; padding: 2rem; color: var(--text-primary);">
-        <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--emerald-border); border-radius: 9999px; padding: 0.2rem 0.65rem; font-size: 0.75rem; font-weight: 600; color: var(--emerald-light); margin-bottom: 0.85rem;">
+        <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: var(--emerald-subtle); border: 1px solid var(--emerald-border); border-radius: 9999px; padding: 0.2rem 0.65rem; font-size: 0.75rem; font-weight: 600; color: var(--emerald-primary); margin-bottom: 0.85rem;">
           <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--emerald-primary);"></span>
           Zero-Trust Multi-Tenancy
         </div>

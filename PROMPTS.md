@@ -220,3 +220,18 @@
 * **Verification:**
   - Full automated Pytest suite executed: 27/27 tests passed cleanly in 31.33s with 0 warnings or failures.
 
+---
+
+## Log Entry 11: Enterprise Light Theme & Seamless Bidirectional Theme Switcher
+* **Date & Timestamp:** 2026-10-24 15:04 IST
+* **Goal:** Transform the application into an ultra-clean, modern enterprise Light Theme (inspired by Stripe, Linear Light, and GitHub Premier) while retaining full bidirectional theme switching support with persistent user preference.
+* **Light Theme Design System Architecture:**
+  - **Color Palette & Contrast:** Implemented pristine Slate 50 (`#f8fafc`) page base, pure white (`#ffffff`) surfaces, Slate 100 (`#f1f5f9`) elevated tiers, and Slate 200 (`#e2e8f0`) hairline borders. Text is rendered in deep Slate 900 (`#0f172a`) and Slate 600 (`#475569`) with AAA accessibility.
+  - **Emerald Security Accent:** Calibrated `--emerald-primary` to `#059669` (Emerald 600) with matching subtle badges and halos, ensuring crisp visibility against bright surfaces.
+  - **Light Vignette & Watermark Imagery:** Page background layers (`.page-bg-layer`) adapt to calibrated light opacity (`0.12`) with a bright radial vignette (`radial-gradient(ellipse at 50% 15%, rgba(255, 255, 255, 0.65) 0%, rgba(241, 245, 249, 0.88) 60%, #F1F5F9 100%)`), allowing thematic 3D security graphics to subtly illuminate the page background as an elegant watermark without reducing contrast.
+  - **Role Badges & Alerts:** Converted to pastel tinted backgrounds with deep text (`--role-admin-bg: #fef3c7; color: #b45309;`, `--role-owner-bg: #ecfdf5; color: #047857;`, `--role-viewer-bg: #f0f9ff; color: #0369a1;`).
+  - **Theme Switcher:** Added an unobtrusive toggle button (`#theme-toggle-btn`) in the sticky navigation bar with Sun and Moon SVGs. The active theme is synchronized to `localStorage` and initialized before DOM render in `<head>` to prevent any flash of unstyled content (FOUC).
+* **Verification:**
+  - Full automated Pytest suite executed: 27/27 tests passed in 28.67s with 0 regressions.
+
+
