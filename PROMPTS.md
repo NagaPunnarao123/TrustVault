@@ -266,5 +266,27 @@
   - Added 4 new automated unit tests covering magic byte rejection, SHA-256 tamper detection, security headers, and brute-force account lockout.
   - Full automated Pytest suite executed: **31/31 passed cleanly** in 38.18s with 0 failures or errors.
 
+---
+
+## Log Entry 13: SQLite Schema Migration & Automated Column Synchronization
+* **Date & Timestamp:** 2026-10-24 15:45 IST
+* **Goal:** Resolve `sqlite3.OperationalError: no such column: users.failed_login_attempts` encountered when loading existing SQLite databases created prior to security column enhancements, ensuring 100% data preservation and automatic migration on application startup.
+* **Root Cause Analysis:**
+  - SQLAlchemy's `db.create_all()` only issues `CREATE TABLE IF NOT EXISTS` statements for missing tables; it does not perform `ALTER TABLE` operations to reconcile schema additions on existing SQLite tables.
+  - When user sessions with existing databases (e.g. `instance/trustvault.db`) were accessed, querying `users` for newly added columns (`failed_login_attempts`, `locked_until`) failed.
+* **Resolution & Architecture:**
+  1. **Direct Database Schema Upgrade:**
+     - Applied safe `ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER DEFAULT 0 NOT NULL;`
+     - Applied `ALTER TABLE users ADD COLUMN locked_until DATETIME;`
+     - Applied `ALTER TABLE documents ADD COLUMN sha256_checksum VARCHAR(64);`
+     - Verified existing database user records (e.g., `narayanasrirama9@gmail.com`) load immediately with intact relationships and zero data loss.
+  2. **Automated, Idempotent Schema Migration Engine (`app/utils/migrations.py`):**
+     - Created `apply_db_migrations()` which inspects SQLite table schemas via `PRAGMA table_info` and dynamically executes `ALTER TABLE ... ADD COLUMN` statements for any newly declared model attributes.
+     - Hooked `apply_db_migrations()` into `run.py` and `app/__init__.py` CLI commands (`init-db`, `bootstrap-admin`), guaranteeing seamless startup across all environments.
+* **Verification & Testing:**
+  - Verified user account query on existing database: both users (1, 2) loaded with `failed_login_attempts=0, locked=False`.
+  - Executed full automated Pytest test suite: **31/31 passed** in 79.26s with zero regressions.
+
+
 
 
