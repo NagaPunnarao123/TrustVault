@@ -3,54 +3,82 @@
 {% block title %}Sign In — TrustVault{% endblock %}
 
 {% block content %}
-<div class="auth-wrapper">
-  <div class="auth-card">
-    <div class="auth-header">
-      <div class="auth-logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-        </svg>
-      </div>
-      <h1 class="auth-title">Welcome back</h1>
-      <p class="auth-subtitle">Sign in to your organization workspace</p>
-    </div>
-
-    <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}">
-      {{ form.hidden_tag() }}
-
-      <div class="form-group">
-        {{ form.email.label(class="form-label") }}
-        {{ form.email(class="form-control", placeholder="name@company.com", autofocus=true) }}
-        {% for error in form.email.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <div class="form-group">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
-          {{ form.password.label(class="form-label", style="margin-bottom: 0;") }}
+<div style="max-width: 960px; margin: 2rem auto; width: 100%;">
+  <div class="auth-card" style="display: grid; grid-template-columns: 1.1fr 1fr; padding: 0; overflow: hidden;">
+    
+    <!-- Left: Form Column -->
+    <div style="padding: 2.5rem 2.25rem; display: flex; flex-direction: column; justify-content: center;">
+      <div class="auth-header" style="text-align: left; margin-bottom: 1.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+          <img src="{{ url_for('static', filename='images/logo.svg') }}" width="40" height="40" alt="TrustVault Logo" style="filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.4));">
+          <div>
+            <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em;">TrustVault</div>
+            <div style="font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em;">Enterprise Document Security</div>
+          </div>
         </div>
-        {{ form.password(class="form-control", placeholder="••••••••••••") }}
-        {% for error in form.password.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
+        <h1 class="auth-title" style="font-size: 1.45rem;">Welcome back</h1>
+        <p class="auth-subtitle">Sign in to your organization workspace</p>
       </div>
 
-      <div class="form-group" style="display: flex; align-items: center; gap: 0.55rem; margin-top: 1rem;">
-        {{ form.remember_me() }}
-        {{ form.remember_me.label(style="font-size: 0.82rem; color: var(--text-secondary); cursor: pointer;") }}
-      </div>
+      <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}">
+        {{ form.hidden_tag() }}
 
-      <div style="margin-top: 1.75rem;">
-        {{ form.submit(class="btn btn-primary", style="width: 100%;") }}
-      </div>
-    </form>
+        <div class="form-group">
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(class="form-control", placeholder="name@company.com", autofocus=true) }}
+          {% for error in form.email.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
 
-    <div style="margin-top: 1.75rem; text-align: center; font-size: 0.85rem; color: var(--text-secondary); border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
-      Need a new organization vault?
-      <a href="{{ url_for('auth.register') }}" style="color: var(--emerald-primary); font-weight: 600; text-decoration: none;">Create workspace</a>
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+            {{ form.password.label(class="form-label", style="margin-bottom: 0;") }}
+          </div>
+          {{ form.password(class="form-control", placeholder="••••••••••••") }}
+          {% for error in form.password.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.55rem; margin-top: 1rem;">
+          {{ form.remember_me() }}
+          {{ form.remember_me.label(style="font-size: 0.82rem; color: var(--text-secondary); cursor: pointer;") }}
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+          {{ form.submit(class="btn btn-primary", style="width: 100%;") }}
+        </div>
+      </form>
+
+      <div style="margin-top: 1.75rem; font-size: 0.85rem; color: var(--text-secondary); border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+        Need a new organization vault?
+        <a href="{{ url_for('auth.register') }}" style="color: var(--emerald-primary); font-weight: 600; text-decoration: none;">Create workspace</a>
+      </div>
     </div>
+
+    <!-- Right: Visual Hero Column -->
+    <div style="position: relative; background: #0A0F15; border-left: 1px solid var(--border-default); display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; min-height: 480px;">
+      <img src="{{ url_for('static', filename='images/trustvault_hero.jpg') }}" alt="Cryptographic Document Vault" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
+      
+      <!-- Gradient Overlay for Contrast -->
+      <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 11, 15, 0.2) 0%, rgba(8, 11, 15, 0.85) 75%, #080B0F 100%);"></div>
+
+      <!-- Feature Highlights -->
+      <div style="position: relative; z-index: 2; padding: 2rem; color: var(--text-primary);">
+        <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--emerald-border); border-radius: 9999px; padding: 0.2rem 0.65rem; font-size: 0.75rem; font-weight: 600; color: var(--emerald-light); margin-bottom: 0.85rem;">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--emerald-primary);"></span>
+          Zero-Trust Multi-Tenancy
+        </div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; letter-spacing: -0.015em; margin-bottom: 0.45rem;">
+          Secure Sharing. Smarter Access.
+        </h3>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+          Private UUID storage, instantaneous access revocation, and tamper-evident audit logs.
+        </p>
+      </div>
+    </div>
+
   </div>
 </div>
 {% endblock %}

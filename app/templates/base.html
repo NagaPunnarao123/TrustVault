@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{% block title %}TrustVault — Secure Sharing & Verifiable Access{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -16,12 +17,7 @@
   <nav class="navbar">
     <div style="display: flex; align-items: center; gap: 1.5rem;">
       <a href="{{ url_for('documents.dashboard') if current_user.is_authenticated else url_for('auth.login') }}" class="nav-brand">
-        <span class="brand-icon-wrap">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <path d="m9 12 2 2 4-4"/>
-          </svg>
-        </span>
+        <img src="{{ url_for('static', filename='images/logo.svg') }}" width="28" height="28" alt="TrustVault Logo" style="filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.35));">
         <span>TrustVault</span>
       </a>
 

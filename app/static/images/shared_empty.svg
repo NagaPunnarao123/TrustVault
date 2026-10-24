@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" fill="none">
+  <defs>
+    <linearGradient id="net-emerald" x1="40" y1="40" x2="200" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="60%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <radialGradient id="net-glow" cx="120" cy="90" r="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient Central Glow -->
+  <circle cx="120" cy="90" r="75" fill="url(#net-glow)"/>
+
+  <!-- Network Conduit Connections -->
+  <line x1="120" y1="90" x2="68" y2="60" stroke="#1E293B" stroke-width="1.8" stroke-dasharray="3 3"/>
+  <line x1="120" y1="90" x2="172" y2="60" stroke="#1E293B" stroke-width="1.8" stroke-dasharray="3 3"/>
+  <line x1="120" y1="90" x2="80" y2="135" stroke="#10B981" stroke-width="1.5" stroke-opacity="0.3"/>
+  <line x1="120" y1="90" x2="160" y2="135" stroke="#10B981" stroke-width="1.5" stroke-opacity="0.3"/>
+
+  <!-- Central Hub Node (Document Pod) -->
+  <circle cx="120" cy="90" r="26" fill="#0C131C" stroke="url(#net-emerald)" stroke-width="2"/>
+  <circle cx="120" cy="90" r="18" fill="#131B26" stroke="#10B981" stroke-width="1.2" stroke-dasharray="2 2"/>
+  
+  <!-- Central Document Icon -->
+  <path d="M115 82 H123 L126 85 V98 H115 Z" fill="#0A0F15" stroke="#34D399" stroke-width="1.4" stroke-linejoin="round"/>
+  <line x1="117" y1="88" x2="123" y2="88" stroke="#34D399" stroke-width="1.2" stroke-linecap="round"/>
+  <line x1="117" y1="92" x2="122" y2="92" stroke="#94A3B8" stroke-width="1.2" stroke-linecap="round"/>
+
+  <!-- Peripheral Peer Nodes -->
+  <!-- Node Top Left -->
+  <circle cx="68" cy="60" r="14" fill="#0E1622" stroke="#2A384A" stroke-width="1.5"/>
+  <circle cx="68" cy="60" r="5" fill="#38BDF8" fill-opacity="0.6"/>
+
+  <!-- Node Top Right -->
+  <circle cx="172" cy="60" r="14" fill="#0E1622" stroke="#2A384A" stroke-width="1.5"/>
+  <circle cx="172" cy="60" r="5" fill="#38BDF8" fill-opacity="0.6"/>
+
+  <!-- Node Bottom Left -->
+  <circle cx="80" cy="135" r="12" fill="#0E1622" stroke="#10B981" stroke-opacity="0.4" stroke-width="1.5"/>
+  <circle cx="80" cy="135" r="4" fill="#34D399"/>
+
+  <!-- Node Bottom Right -->
+  <circle cx="160" cy="135" r="12" fill="#0E1622" stroke="#10B981" stroke-opacity="0.4" stroke-width="1.5"/>
+  <circle cx="160" cy="135" r="4" fill="#34D399"/>
+</svg>

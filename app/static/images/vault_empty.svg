@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" fill="none">
+  <defs>
+    <linearGradient id="pod-base" x1="120" y1="30" x2="120" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#141E28"/>
+      <stop offset="100%" stop-color="#0A1016"/>
+    </linearGradient>
+    <linearGradient id="pod-emerald" x1="60" y1="40" x2="180" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="50%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="pod-grid" x1="0" y1="0" x2="240" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient Perspective Floor Grid -->
+  <ellipse cx="120" cy="140" rx="90" ry="24" fill="url(#pod-grid)"/>
+  <ellipse cx="120" cy="140" rx="70" ry="18" stroke="#10B981" stroke-opacity="0.15" stroke-dasharray="4 4"/>
+  <ellipse cx="120" cy="140" rx="45" ry="11" stroke="#10B981" stroke-opacity="0.25"/>
+
+  <!-- Isometric Floating Vault Safe -->
+  <g transform="translate(0, -6)">
+    <!-- Back Cube Facets -->
+    <path d="M120 40 L168 66 L168 114 L120 88 Z" fill="#0C131B" stroke="#1E293B" stroke-width="1.2"/>
+    <path d="M120 40 L72 66 L72 114 L120 88 Z" fill="#090E14" stroke="#1E293B" stroke-width="1.2"/>
+    <path d="M120 40 L168 66 L120 92 L72 66 Z" fill="#131B26" stroke="#1E293B" stroke-width="1.2"/>
+
+    <!-- Glowing Cyber Hologram Beam -->
+    <path d="M120 30 L154 50 L120 70 L86 50 Z" fill="url(#pod-emerald)" fill-opacity="0.12" stroke="url(#pod-emerald)" stroke-width="1.4"/>
+    
+    <!-- Document Stack in Vault -->
+    <rect x="106" y="58" width="28" height="36" rx="3" fill="#0F1722" stroke="#10B981" stroke-width="1.4"/>
+    <line x1="112" y1="66" x2="128" y2="66" stroke="#34D399" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="112" y1="72" x2="124" y2="72" stroke="#94A3B8" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="112" y1="78" x2="122" y2="78" stroke="#94A3B8" stroke-width="1.2" stroke-linecap="round"/>
+    
+    <!-- Lock Node Ring -->
+    <circle cx="120" cy="85" r="7" fill="#090E14" stroke="#10B981" stroke-width="1.5"/>
+    <circle cx="120" cy="85" r="2.5" fill="#34D399"/>
+  </g>
+
+  <!-- Floating Holographic Particles -->
+  <circle cx="78" cy="48" r="1.5" fill="#34D399" opacity="0.6"/>
+  <circle cx="162" cy="52" r="2" fill="#10B981" opacity="0.5"/>
+  <circle cx="64" cy="95" r="1.5" fill="#10B981" opacity="0.4"/>
+  <circle cx="178" cy="90" r="1.5" fill="#34D399" opacity="0.6"/>
+</svg>

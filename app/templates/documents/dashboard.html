@@ -23,6 +23,26 @@
   </div>
 </div>
 
+<!-- Enterprise Organization Banner -->
+<div class="card" style="padding: 0; overflow: hidden; position: relative; margin-bottom: 2rem; border-color: var(--emerald-border); box-shadow: var(--shadow-md);">
+  <div style="display: grid; grid-template-columns: 1.6fr 1fr; min-height: 130px;">
+    <div style="padding: 1.5rem 1.75rem; display: flex; flex-direction: column; justify-content: center; z-index: 2;">
+      <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem;">
+        <span class="tenant-badge-dot"></span>
+        <span style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--emerald-light);">Encrypted Organization Vault</span>
+      </div>
+      <h2 style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em;">{{ tenant.name }}</h2>
+      <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.25rem;">
+        Private UUID storage outside web root &bull; Continuous server authorization &bull; Tamper-evident audit logging
+      </p>
+    </div>
+    <div style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: flex-end;">
+      <img src="{{ url_for('static', filename='images/trustvault_hero.jpg') }}" alt="Vault Security Enclosure" style="position: absolute; right: 0; top: 0; height: 100%; width: 100%; object-fit: cover; opacity: 0.55;">
+      <div style="position: absolute; inset: 0; background: linear-gradient(90deg, var(--bg-surface) 0%, rgba(14, 19, 27, 0.3) 60%, transparent 100%);"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Stats Grid -->
 <div class="stats-grid">
   {% if user_role in ['OWNER', 'ADMIN'] %}
@@ -148,19 +168,16 @@
       </table>
     </div>
   {% else %}
-    <div style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 0.75rem auto; color: var(--text-tertiary);">
-        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-        <polyline points="14 2 14 8 20 8"/>
-      </svg>
-      <p style="font-size: 1rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.25rem;">No documents available</p>
+    <div style="text-align: center; padding: 3.5rem 1rem; color: var(--text-secondary);">
+      <img src="{{ url_for('static', filename='images/vault_empty.svg') }}" width="160" height="120" alt="No Documents" style="margin-bottom: 0.75rem; filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.15));">
+      <p style="font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">No documents available</p>
       {% if user_role == 'OWNER' %}
-        <p style="font-size: 0.85rem; color: var(--text-tertiary);">Start by uploading your first document to this workspace.</p>
+        <p style="font-size: 0.82rem; color: var(--text-tertiary);">Start by uploading your first document to this workspace.</p>
         <div style="margin-top: 1.25rem;">
           <a href="{{ url_for('documents.upload') }}" class="btn btn-primary btn-sm">+ Upload Document</a>
         </div>
       {% else %}
-        <p style="font-size: 0.85rem; color: var(--text-tertiary);">Documents will appear here once an owner shares them with you.</p>
+        <p style="font-size: 0.82rem; color: var(--text-tertiary);">Documents will appear here once an owner shares them with you.</p>
       {% endif %}
     </div>
   {% endif %}
