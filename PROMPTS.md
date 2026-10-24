@@ -234,4 +234,37 @@
 * **Verification:**
   - Full automated Pytest suite executed: 27/27 tests passed in 28.67s with 0 regressions.
 
+---
+
+## Log Entry 12: Enterprise Security Hardening & Threat Mitigation
+* **Date & Timestamp:** 2026-10-24 15:30 IST
+* **Goal:** Harden TrustVault across multiple security boundaries by implementing real, verifiable defenses against brute-force attacks, polyglot uploads, file tampering, clickjacking, and MIME sniffing.
+* **Security Controls Implemented:**
+  1. **Magic Byte Signature Inspection & Polyglot Prevention (`app/utils/security.py`):**
+     - Implemented `validate_file_security()` inspecting the initial 1024 bytes of uploaded files.
+     - Detects and rejects disguised Windows PE executables (`MZ`), Linux ELF binaries (`\x7fELF`), Mach-O, Java bytecode, Unix shell scripts (`#!/`), and web shells (`<?php`, `<%eval`).
+     - Enforces standard headers for images (`\x89PNG`, `\xff\xd8\xff`) and Office documents (`PK\x03\x04`).
+     - Disallows embedded null bytes in text and CSV files.
+  2. **Cryptographic SHA-256 Checksum & Tamper Detection (`app/utils/storage.py`, `app/documents/routes.py`):**
+     - Added `sha256_checksum` column to `Document` model.
+     - Computes SHA-256 hash upon file upload and stores it with the record.
+     - On file download, validates the physical file's current hash on disk against the stored checksum; if altered, aborts with HTTP 500 and records an `INTEGRITY_VIOLATION` audit event.
+  3. **Account Lockout & Brute-Force Rate Limiting (`app/models.py`, `app/auth/routes.py`):**
+     - Added `failed_login_attempts` counter and `locked_until` timestamp to `User` model.
+     - Automatically locks the account for 15 minutes after 5 consecutive failed attempts.
+     - Records `ACCOUNT_LOCKED` and blocks future attempts with `LOGIN_BLOCKED` audit events.
+     - Resets counters upon successful authentication.
+  4. **Session Fixation Defense (`app/auth/routes.py`):**
+     - Calls `session.clear()` before setting authentication identity and active tenant.
+  5. **OWASP Browser Defense Headers & Download Sandboxing (`app/__init__.py`, `app/documents/routes.py`):**
+     - `X-Frame-Options: DENY` (strongest clickjacking mitigation).
+     - `X-Content-Type-Options: nosniff` (prevents MIME sniffing).
+     - `Content-Security-Policy`: Modern restrictive policy with `frame-ancestors 'none'`, `object-src 'none'`.
+     - `Referrer-Policy: strict-origin-when-cross-origin`.
+     - Download delivery headers: `X-Download-Options: noopen` and `Content-Security-Policy: default-src 'none'; sandbox`.
+* **Verification & Testing:**
+  - Added 4 new automated unit tests covering magic byte rejection, SHA-256 tamper detection, security headers, and brute-force account lockout.
+  - Full automated Pytest suite executed: **31/31 passed cleanly** in 38.18s with 0 failures or errors.
+
+
 

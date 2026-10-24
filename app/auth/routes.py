@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from flask import render_template, redirect, url_for, flash, request, session, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse
@@ -20,49 +21,101 @@ def login():
         password = form.password.data
         user = User.query.filter_by(email=email).first()
 
-        if user and user.check_password(password):
-            if not user.is_active:
+        if user:
+            # 1. Check account lockout state
+            if user.is_locked():
+                now_utc = datetime.now(timezone.utc)
+                locked_time = user.locked_until if user.locked_until.tzinfo else user.locked_until.replace(tzinfo=timezone.utc)
+                remaining_mins = max(1, int((locked_time - now_utc).total_seconds() / 60) + 1)
+                
                 log_audit_event(
-                    action='LOGIN_FAILURE',
+                    action='LOGIN_BLOCKED',
                     resource_type='USER',
                     resource_id=str(user.id),
                     status='DENIED',
-                    details='Account is deactivated',
+                    details=f"Login attempt blocked: account is temporarily locked ({remaining_mins}m remaining)",
                     user_id=user.id
                 )
-                flash('Your account has been deactivated. Please contact your administrator.', 'danger')
+                flash(f'Account is temporarily locked due to multiple failed login attempts. Please try again in {remaining_mins} minute(s).', 'danger')
                 return render_template('auth/login.html', form=form)
 
-            login_user(user, remember=form.remember_me.data)
+            # 2. Check credentials
+            if user.check_password(password):
+                if not user.is_active:
+                    log_audit_event(
+                        action='LOGIN_FAILURE',
+                        resource_type='USER',
+                        resource_id=str(user.id),
+                        status='DENIED',
+                        details='Account is deactivated',
+                        user_id=user.id
+                    )
+                    flash('Your account has been deactivated. Please contact your administrator.', 'danger')
+                    return render_template('auth/login.html', form=form)
 
-            # Determine and set active tenant
-            membership = TenantMembership.query.filter_by(user_id=user.id).first()
-            if membership:
-                session['active_tenant_id'] = membership.tenant_id
+                # Reset lockout counter on success
+                user.reset_failed_logins()
+                db.session.commit()
 
-            log_audit_event(
-                action='LOGIN_SUCCESS',
-                resource_type='USER',
-                resource_id=str(user.id),
-                status='SUCCESS',
-                details='User successfully logged in',
-                user_id=user.id,
-                tenant_id=membership.tenant_id if membership else None
-            )
+                # Session fixation prevention: clear old session tokens before establishing identity
+                session.clear()
 
-            flash(f'Welcome back, {user.full_name}!', 'success')
-            next_page = request.args.get('next')
-            # Prevent Open Redirect vulnerability
-            if next_page and urlparse(next_page).netloc == '':
-                return redirect(next_page)
-            return redirect(url_for('documents.dashboard'))
+                login_user(user, remember=form.remember_me.data)
+
+                # Determine and set active tenant
+                membership = TenantMembership.query.filter_by(user_id=user.id).first()
+                if membership:
+                    session['active_tenant_id'] = membership.tenant_id
+
+                log_audit_event(
+                    action='LOGIN_SUCCESS',
+                    resource_type='USER',
+                    resource_id=str(user.id),
+                    status='SUCCESS',
+                    details='User successfully logged in',
+                    user_id=user.id,
+                    tenant_id=membership.tenant_id if membership else None
+                )
+
+                flash(f'Welcome back, {user.full_name}!', 'success')
+                next_page = request.args.get('next')
+                # Prevent Open Redirect vulnerability
+                if next_page and urlparse(next_page).netloc == '':
+                    return redirect(next_page)
+                return redirect(url_for('documents.dashboard'))
+            else:
+                # Password incorrect: increment failure counter
+                is_now_locked = user.record_failed_login(max_attempts=5, lockout_minutes=15)
+                db.session.commit()
+
+                if is_now_locked:
+                    log_audit_event(
+                        action='ACCOUNT_LOCKED',
+                        resource_type='USER',
+                        resource_id=str(user.id),
+                        status='WARNING',
+                        details='Account locked for 15 minutes after 5 consecutive failed login attempts',
+                        user_id=user.id
+                    )
+                    flash('Invalid email address or password. Your account has been temporarily locked for 15 minutes due to multiple failed attempts.', 'danger')
+                else:
+                    attempts_left = 5 - user.failed_login_attempts
+                    log_audit_event(
+                        action='LOGIN_FAILURE',
+                        resource_type='USER',
+                        resource_id=str(user.id),
+                        status='FAILURE',
+                        details=f"Invalid password attempt ({attempts_left} attempts remaining before temporary lockout)",
+                        user_id=user.id
+                    )
+                    flash(f'Invalid email address or password. ({attempts_left} attempt(s) remaining before temporary lockout)', 'danger')
         else:
             log_audit_event(
                 action='LOGIN_FAILURE',
                 resource_type='AUTH',
                 resource_id=email,
                 status='FAILURE',
-                details='Invalid email or password attempt'
+                details='Invalid email address'
             )
             flash('Invalid email address or password.', 'danger')
 

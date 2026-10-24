@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import re
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -44,6 +44,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     full_name = db.Column(db.String(120), nullable=False)
     is_active_account = db.Column(db.Boolean, default=True, nullable=False)
+    failed_login_attempts = db.Column(db.Integer, default=0, nullable=False)
+    locked_until = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Relationships
@@ -68,6 +70,35 @@ class User(UserMixin, db.Model):
         if not self.password_hash or not password:
             return False
         return check_password_hash(self.password_hash, password)
+
+    def is_locked(self) -> bool:
+        """Check if the account is currently locked due to repeated failed login attempts."""
+        if self.locked_until:
+            now_utc = datetime.now(timezone.utc)
+            locked_time = self.locked_until if self.locked_until.tzinfo else self.locked_until.replace(tzinfo=timezone.utc)
+            if now_utc < locked_time:
+                return True
+            # Lockout period expired: auto-reset
+            self.locked_until = None
+            self.failed_login_attempts = 0
+        return False
+
+    def record_failed_login(self, max_attempts: int = 5, lockout_minutes: int = 15) -> bool:
+        """
+        Record a failed authentication attempt.
+        Locks the account for `lockout_minutes` if `max_attempts` is reached.
+        Returns True if the account became locked, False otherwise.
+        """
+        self.failed_login_attempts += 1
+        if self.failed_login_attempts >= max_attempts:
+            self.locked_until = datetime.now(timezone.utc) + timedelta(minutes=lockout_minutes)
+            return True
+        return False
+
+    def reset_failed_logins(self) -> None:
+        """Reset failed login counters upon successful authentication."""
+        self.failed_login_attempts = 0
+        self.locked_until = None
 
     def get_role_in_tenant(self, tenant_id: int):
         """Retrieve user's role (ADMIN, OWNER, VIEWER) for a specific tenant."""
@@ -130,6 +161,7 @@ class Document(db.Model):
     storage_filename = db.Column(db.String(64), unique=True, nullable=False, index=True)
     file_type = db.Column(db.String(50), nullable=False)
     file_size_bytes = db.Column(db.Integer, nullable=False)
+    sha256_checksum = db.Column(db.String(64), nullable=True)
     category = db.Column(db.String(50), default='General', nullable=False)
     description = db.Column(db.String(500), default='', nullable=False)
     uploaded_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)

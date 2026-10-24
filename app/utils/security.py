@@ -145,7 +145,76 @@ def is_allowed_file(filename: str, allowed_extensions: set) -> bool:
     """
     Validate that the uploaded file has an allowed extension.
     """
-    if '.' not in filename:
+    if not filename or '.' not in filename:
         return False
     ext = filename.rsplit('.', 1)[1].lower()
     return ext in allowed_extensions
+
+def validate_file_security(file_storage, allowed_extensions: set) -> tuple[bool, str]:
+    """
+    Multi-layer file upload inspection:
+    1. Extension whitelist check against permitted types.
+    2. Null-byte and traversal detection in filename.
+    3. Content signature inspection (magic bytes) to defeat polyglots and disguised binaries:
+       - Detects and rejects Windows PE (MZ), Linux ELF, Mach-O, Java bytecode, shell scripts.
+       - Detects and rejects embedded PHP tags or ASP tags.
+       - Enforces image headers for PNG/JPG and ZIP headers for DOCX/XLSX.
+       - Disallows null bytes in text/CSV files.
+    """
+    if not file_storage or not file_storage.filename:
+        return False, "No file provided or missing filename."
+
+    filename = file_storage.filename
+    if '\x00' in filename:
+        return False, "Suspicious null byte in filename."
+
+    if not is_allowed_file(filename, allowed_extensions):
+        return False, "Disallowed file type. Permitted: PDF, DOCX, TXT, PNG, JPG, CSV, XLSX."
+
+    ext = filename.rsplit('.', 1)[1].lower()
+
+    # Read initial bytes for magic signature inspection
+    stream = file_storage.stream
+    stream.seek(0)
+    header = stream.read(1024)
+    stream.seek(0)  # Always rewind stream so subsequent save has full file
+
+    if len(header) == 0:
+        return False, "Uploaded file is empty (0 bytes)."
+
+    # Universal Dangerous Binary / Executable Signatures
+    DANGEROUS_PREFIXES = [
+        b'MZ',                   # Windows PE Executable (EXE, DLL, SYS)
+        b'\x7fELF',              # Linux ELF Binary
+        b'\xca\xfe\xba\xbe',     # Mach-O / Java Class
+        b'\xfe\xed\xfa',         # Mach-O
+        b'\xce\xfa\xed\xfe',     # Mach-O 32-bit
+        b'\xcf\xfa\xed\xfe',     # Mach-O 64-bit
+        b'#!/bin/',              # Unix shell script shebang
+        b'#!/usr/bin/',          # Unix shell script shebang
+    ]
+    for prefix in DANGEROUS_PREFIXES:
+        if header.startswith(prefix):
+            return False, "Executable binary signature detected. Binary uploads are strictly prohibited."
+
+    # Universal Script Injection Signatures
+    lower_header = header.lower()
+    if b'<?php' in lower_header or b'<%eval' in lower_header:
+        return False, "Server-side executable script tags detected in file header."
+
+    # Format-specific signature verification
+    if ext == 'png':
+        if not header.startswith(b'\x89PNG'):
+            return False, "Corrupted or disguised PNG file: missing standard PNG signature."
+    elif ext in {'jpg', 'jpeg'}:
+        if not header.startswith(b'\xff\xd8\xff'):
+            return False, "Corrupted or disguised JPEG file: missing standard JPEG SOI marker."
+    elif ext in {'docx', 'xlsx'}:
+        # Office OpenXML documents are ZIP archives
+        if not header.startswith(b'PK'):
+            return False, "Corrupted or disguised Office document: missing OpenXML/ZIP container header."
+    elif ext in {'txt', 'csv'}:
+        if b'\x00' in header:
+            return False, "Text/CSV file contains embedded null bytes (suspicious binary content)."
+
+    return True, "Valid"

@@ -47,13 +47,25 @@ def create_app(config_class=None):
             return redirect(url_for('documents.dashboard'))
         return redirect(url_for('auth.login'))
 
-    # Security Headers Middleware
+    # Security Headers Middleware (OWASP Secure Configuration)
     @app.after_request
     def set_security_headers(response):
         response.headers['X-Content-Type-Options'] = 'nosniff'
-        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-Frame-Options'] = 'DENY'
         response.headers['X-XSS-Protection'] = '1; mode=block'
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Permissions-Policy'] = 'geolocation=(), camera=(), microphone=(), payment=()'
+        if 'Content-Security-Policy' not in response.headers:
+            response.headers['Content-Security-Policy'] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline'; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "font-src 'self' https://fonts.gstatic.com; "
+                "img-src 'self' data:; "
+                "object-src 'none'; "
+                "base-uri 'self'; "
+                "frame-ancestors 'none';"
+            )
         return response
 
     # Global Template Context Processor

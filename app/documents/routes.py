@@ -11,10 +11,11 @@ from app.extensions import db
 from app.audit.service import log_audit_event
 from app.utils.security import (
     get_active_tenant_id, require_role, can_access_document,
-    sanitize_filename, is_allowed_file
+    sanitize_filename, is_allowed_file, validate_file_security
 )
 from app.utils.storage import (
-    generate_storage_filename, save_uploaded_file, delete_stored_file
+    generate_storage_filename, save_uploaded_file, delete_stored_file,
+    calculate_file_sha256
 )
 
 @documents_bp.route('/')
@@ -161,8 +162,19 @@ def upload():
         uploaded_file = form.file.data
         raw_filename = uploaded_file.filename
 
-        if not raw_filename or not is_allowed_file(raw_filename, current_app.config['ALLOWED_EXTENSIONS']):
-            flash('Disallowed file type. Permitted: PDF, DOCX, TXT, PNG, JPG, CSV, XLSX.', 'danger')
+        # Multi-layer deep validation: extension whitelist, null-byte traversal, and magic byte signature
+        is_valid, validation_msg = validate_file_security(uploaded_file, current_app.config['ALLOWED_EXTENSIONS'])
+        if not is_valid:
+            log_audit_event(
+                action='UPLOAD_REJECTED',
+                resource_type='DOCUMENT',
+                resource_id=raw_filename if raw_filename else 'unknown',
+                status='DENIED',
+                details=f"Upload rejected by security validation: {validation_msg}",
+                tenant_id=tenant_id,
+                user_id=current_user.id
+            )
+            flash(validation_msg, 'danger')
             return render_template('documents/upload.html', form=form)
 
         safe_original_name = sanitize_filename(raw_filename)
@@ -170,13 +182,13 @@ def upload():
         ext = safe_original_name.rsplit('.', 1)[1].lower() if '.' in safe_original_name else 'bin'
 
         try:
-            file_size, _ = save_uploaded_file(
+            file_size, _, sha256_checksum = save_uploaded_file(
                 uploaded_file,
                 current_app.config['UPLOAD_FOLDER'],
                 storage_filename
             )
 
-            # Record document metadata in database
+            # Record document metadata with cryptographic integrity checksum
             document = Document(
                 tenant_id=tenant_id,
                 owner_id=current_user.id,
@@ -184,6 +196,7 @@ def upload():
                 storage_filename=storage_filename,
                 file_type=ext.upper(),
                 file_size_bytes=file_size,
+                sha256_checksum=sha256_checksum,
                 category=form.category.data,
                 description=form.description.data.strip()
             )
@@ -195,7 +208,7 @@ def upload():
                 resource_type='DOCUMENT',
                 resource_id=str(document.id),
                 status='SUCCESS',
-                details=f"Uploaded '{safe_original_name}' ({file_size} bytes, type: {ext})",
+                details=f"Uploaded '{safe_original_name}' ({file_size} bytes, SHA-256: {sha256_checksum[:12]}...)",
                 tenant_id=tenant_id,
                 user_id=current_user.id
             )
@@ -218,8 +231,8 @@ def upload():
 def download(doc_id):
     """
     Download a document.
-    Enforces server-side tenant isolation and authorization checks on every single request.
-    Serves files strictly via send_from_directory from private storage with sanitized download names.
+    Enforces server-side tenant isolation, authorization, and cryptographic file checksum verification.
+    Serves files strictly via send_from_directory with hardened security headers.
     """
     document = db.get_or_404(Document, doc_id)
     tenant_id = get_active_tenant_id()
@@ -238,6 +251,24 @@ def download(doc_id):
         )
         abort(403)
 
+    upload_dir = current_app.config['UPLOAD_FOLDER']
+    file_path = os.path.join(upload_dir, document.storage_filename)
+
+    # Cryptographic integrity check: verify file has not been altered or corrupted on disk
+    if os.path.exists(file_path) and document.sha256_checksum:
+        current_checksum = calculate_file_sha256(file_path)
+        if current_checksum != document.sha256_checksum:
+            log_audit_event(
+                action='INTEGRITY_VIOLATION',
+                resource_type='DOCUMENT',
+                resource_id=str(doc_id),
+                status='FAILURE',
+                details=f"Tampering detected for '{document.original_filename}'. Expected SHA-256: {document.sha256_checksum}, computed: {current_checksum}",
+                tenant_id=document.tenant_id,
+                user_id=current_user.id
+            )
+            abort(500)
+
     log_audit_event(
         action='DOWNLOAD_DOCUMENT',
         resource_type='DOCUMENT',
@@ -248,13 +279,17 @@ def download(doc_id):
         user_id=current_user.id
     )
 
-    upload_dir = current_app.config['UPLOAD_FOLDER']
-    return send_from_directory(
+    response = send_from_directory(
         upload_dir,
         document.storage_filename,
         as_attachment=True,
         download_name=document.original_filename
     )
+    # Hardened response headers to prevent browser-side execution
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Download-Options'] = 'noopen'
+    response.headers['Content-Security-Policy'] = "default-src 'none'; sandbox"
+    return response
 
 
 @documents_bp.route('/<int:doc_id>/manage-access', methods=['GET', 'POST'])

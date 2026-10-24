@@ -1,5 +1,5 @@
 import pytest
-from app.models import User, Tenant, TenantMembership
+from app.models import User, Tenant, TenantMembership, AuditEvent
 from app.extensions import db
 
 def test_password_hashing():
@@ -118,3 +118,40 @@ def test_anonymous_user_redirected_to_login(client):
         resp = client.get(route, follow_redirects=False)
         assert resp.status_code == 302
         assert '/auth/login' in resp.headers['Location']
+
+
+def test_account_lockout_after_five_failed_logins(client, auth, app):
+    """
+    Account must be automatically locked after 5 consecutive failed login attempts,
+    preventing automated password brute-force and dictionary attacks.
+    """
+    auth.register(email='target_user@secure.com', password='RealPassword123!', full_name='Target User')
+
+    # 4 Failed login attempts
+    for attempt in range(1, 5):
+        resp = auth.login(email='target_user@secure.com', password='WrongPassword!')
+        assert resp.status_code == 200
+        expected_remaining = 5 - attempt
+        assert f'{expected_remaining} attempt(s) remaining' in resp.data.decode('utf-8')
+
+    # 5th Failed login attempt: triggers lockout
+    resp_lockout = auth.login(email='target_user@secure.com', password='WrongPassword!')
+    assert 'temporarily locked for 15 minutes' in resp_lockout.data.decode('utf-8')
+
+    with app.app_context():
+        user = User.query.filter_by(email='target_user@secure.com').first()
+        assert user.failed_login_attempts == 5
+        assert user.is_locked() is True
+
+        # Verify audit event was recorded
+        audit_lock = AuditEvent.query.filter_by(action='ACCOUNT_LOCKED', user_id=user.id).first()
+        assert audit_lock is not None
+
+    # 6th Attempt with correct password while locked must still be rejected
+    blocked_resp = auth.login(email='target_user@secure.com', password='RealPassword123!')
+    assert 'Account is temporarily locked' in blocked_resp.data.decode('utf-8')
+
+    with app.app_context():
+        audit_blocked = AuditEvent.query.filter_by(action='LOGIN_BLOCKED', user_id=user.id).first()
+        assert audit_blocked is not None
+

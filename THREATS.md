@@ -58,9 +58,11 @@ flowchart TD
 ## 3. STRIDE Threat Analysis & Implemented Mitigations
 
 ### 3.1 Spoofing (Identity Deception)
-* **Threat:** An attacker guesses a user password or reuses a stolen session cookie.
+* **Threat:** An attacker guesses a user password via dictionary brute-force attacks or reuses a stolen session cookie.
 * **Mitigation:**
   - Werkzeug `generate_password_hash` with `check_password_hash`. Minimum 8 characters enforced.
+  - **Account Lockout & Brute-Force Mitigation:** After 5 consecutive failed login attempts, the user account is automatically locked for 15 minutes. High-severity `ACCOUNT_LOCKED` and `LOGIN_BLOCKED` events are recorded in the audit ledger.
+  - **Session Fixation Prevention:** Session state is cleared (`session.clear()`) prior to authenticating a user into a new session.
   - Session cookies marked `HttpOnly` (inaccessible to JavaScript) and `SameSite=Lax` (immune to cross-site credential leakage).
   - Explicit session invalidation on `/auth/logout`.
 * **Linked Automated Tests:**
@@ -68,18 +70,25 @@ flowchart TD
   - `tests/test_auth.py::test_login_success_and_logout`
   - `tests/test_auth.py::test_login_invalid_password`
   - `tests/test_auth.py::test_anonymous_user_redirected_to_login`
+  - `tests/test_auth.py::test_account_lockout_after_five_failed_logins`
 
 ### 3.2 Tampering (Data Modification & Integrity Attacks)
 * **Threat 1:** Cross-Site Request Forgery (CSRF) where a malicious site forces an authenticated user to delete a document or grant access.
   - **Mitigation:** Flask-WTF CSRF tokens required on all POST forms and mutation endpoints.
 * **Threat 2:** Attacker uploads a file named `../../../../etc/passwd` to overwrite server files.
   - **Mitigation:** `sanitize_filename()` via Werkzeug `secure_filename()` strips directory traversal characters; files are saved on disk using randomly generated UUIDs (`uuid.uuid4().hex + ext`), never user-provided filenames.
-* **Threat 3:** Cross-Site Scripting (XSS) via document descriptions or filenames.
+* **Threat 3:** Polyglot files and disguised executable binaries (e.g., Windows `.exe` or PHP web shell disguised as `.png` or `.pdf`).
+  - **Mitigation:** Deep magic byte file signature verification (`validate_file_security()`) inspects file headers, rejecting Windows PE (`MZ`), Linux ELF (`\x7fELF`), Mach-O, shell scripts (`#!/`), server scripts (`<?php`), and null-byte binary poisoning in text/CSV files.
+* **Threat 4:** File tampering or offline alteration on disk.
+  - **Mitigation:** Cryptographic SHA-256 checksums are calculated upon document upload and stored in the database. During download, the physical file's checksum is recomputed and compared against the stored hash. If altered, download is aborted and a critical `INTEGRITY_VIOLATION` audit record is generated.
+* **Threat 5:** Cross-Site Scripting (XSS) via document descriptions or filenames.
   - **Mitigation:** Jinja2 template autoescaping enabled; characters like `'`, `"`, `<`, `>` are automatically converted to HTML entities (e.g., `&#39;`).
 * **Linked Automated Tests:**
   - `tests/test_documents.py::test_path_traversal_prevention_in_filename`
   - `tests/test_documents.py::test_random_uuid_storage_name_and_private_location`
   - `tests/test_documents.py::test_document_deletion_removes_physical_file`
+  - `tests/test_audit.py::test_magic_bytes_rejects_disguised_executables`
+  - `tests/test_audit.py::test_sha256_checksum_and_tamper_detection`
 
 ### 3.3 Repudiation (Denial of Actions)
 * **Threat:** A user claims they never downloaded, deleted, or shared a confidential document.
@@ -101,11 +110,18 @@ flowchart TD
 * **Threat 3: Cross-Tenant Sharing Leakage.**
   - An owner attempts to share a file with an external email.
   - **Mitigation:** `manage_access` validates that recipient exists AND is an active member of the same tenant.
+* **Threat 4: In-Browser Document Execution (Stored XSS on Download).**
+  - An attacker uploads an HTML file or polyglot image attempting to execute script in the browser context upon viewing.
+  - **Mitigation:** Document downloads are served strictly with `as_attachment=True`, `X-Content-Type-Options: nosniff`, `X-Download-Options: noopen`, and `Content-Security-Policy: default-src 'none'; sandbox`.
+* **Threat 5: Clickjacking & Origin Leakage.**
+  - An attacker embeds TrustVault in an iframe on a malicious website to hijack user actions.
+  - **Mitigation:** Enforced `X-Frame-Options: DENY`, `frame-ancestors 'none'`, and `Referrer-Policy: strict-origin-when-cross-origin`.
 * **Linked Automated Tests:**
   - `tests/test_tenancy.py::test_cross_tenant_download_prohibited`
   - `tests/test_tenancy.py::test_cross_tenant_delete_prohibited`
   - `tests/test_tenancy.py::test_cross_tenant_sharing_prevented`
   - `tests/test_tenancy.py::test_document_listing_strictly_scoped_to_active_tenant`
+  - `tests/test_audit.py::test_http_and_download_security_headers`
 
 ### 3.5 Denial of Service (Resource Exhaustion)
 * **Threat:** An attacker uploads massive gigabyte files or floods disk storage with malicious scripts.

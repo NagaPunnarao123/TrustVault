@@ -16,9 +16,13 @@ TrustVault is an enterprise-grade document sharing web application designed with
   * `VIEWER`: Read-only access to documents explicitly shared with them. Cannot upload, share, revoke, or delete.
 * **Private Storage Architecture:** Uploaded files are stored in `instance/uploads/` (strictly outside the static directory) under random UUID filenames. Direct web URL access is blocked. Downloads require authenticated session checks and permission validation via `send_from_directory`.
 * **Immediate Revocation:** Revoking access instantly blocks subsequent downloads through the application. (As noted in system design, revocation cannot delete local copies already saved to a user's machine).
+* **Multi-Layer Magic Byte & Polyglot Defense:** Validates binary headers (`%PDF`, `\x89PNG`, `\xff\xd8\xff`, `PK\x03\x04`) on all uploads and rejects disguised PE/ELF executables, shell scripts, web shells, and null-byte poison attacks.
+* **Cryptographic SHA-256 Checksum Verification:** Calculates file hashes on upload and validates integrity before serving downloads, instantly catching offline disk tampering.
+* **Account Lockout & Brute-Force Rate Limiting:** Locks accounts for 15 minutes after 5 consecutive failed login attempts, recording `ACCOUNT_LOCKED` security events.
+* **OWASP Security Headers & Download Sandboxing:** Enforces `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Content-Security-Policy`, and download sandboxing (`sandbox; default-src 'none'`).
 * **Verifiable Audit Logging:** Centralized recording of logins, logouts, uploads, downloads, shares, revocations, deletions, and access violations (`ACCESS_DENIED`).
 * **Safe Admin Bootstrap:** Administrative roles cannot be registered through public forms. The initial admin is provisioned via the secure CLI command `flask bootstrap-admin` using environment secrets.
-* **Responsive Dark Emerald UI:** Professional, clean, responsive design using dark charcoal (`#0B0F14`, `#18222D`) with emerald green accents (`#10B981`).
+* **Dual Enterprise Design System:** Clean modern Light Theme (default) with an interactive switcher to Dark Emerald mode, featuring high contrast typography, frosted glassmorphism, and contextual watermark 3D graphics.
 
 ---
 

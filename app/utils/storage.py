@@ -1,5 +1,6 @@
 import os
 import uuid
+import hashlib
 from pathlib import Path
 from werkzeug.datastructures import FileStorage
 
@@ -14,10 +15,21 @@ def generate_storage_filename(original_filename: str) -> str:
         ext = '.' + original_filename.rsplit('.', 1)[1].lower()
     return f"{uuid.uuid4().hex}{ext}"
 
-def save_uploaded_file(file: FileStorage, upload_folder: str, storage_filename: str) -> tuple[int, str]:
+def calculate_file_sha256(file_path: str) -> str:
+    """
+    Calculate the SHA-256 cryptographic hash of a stored file.
+    Streams the file in 64 KB blocks to handle files of any size efficiently.
+    """
+    sha256_hash = hashlib.sha256()
+    with open(file_path, 'rb') as f:
+        while chunk := f.read(65536):
+            sha256_hash.update(chunk)
+    return sha256_hash.hexdigest()
+
+def save_uploaded_file(file: FileStorage, upload_folder: str, storage_filename: str) -> tuple[int, str, str]:
     """
     Save an uploaded file to the private storage folder.
-    Returns (file_size_bytes, absolute_path).
+    Returns (file_size_bytes, absolute_path, sha256_checksum).
     Ensures upload directory exists and guards against path escape.
     """
     folder_path = Path(upload_folder).resolve()
@@ -31,7 +43,9 @@ def save_uploaded_file(file: FileStorage, upload_folder: str, storage_filename: 
     
     file.save(str(target_path))
     file_size = target_path.stat().st_size
-    return file_size, str(target_path)
+    sha256_checksum = calculate_file_sha256(str(target_path))
+    
+    return file_size, str(target_path), sha256_checksum
 
 def delete_stored_file(upload_folder: str, storage_filename: str) -> bool:
     """
