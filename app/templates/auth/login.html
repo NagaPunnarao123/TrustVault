@@ -2,6 +2,10 @@
 
 {% block title %}Sign In — TrustVault{% endblock %}
 
+{% block page_bg %}
+  <div class="page-bg-layer" style="background-image: url('{{ url_for('static', filename='images/trustvault_hero.jpg') }}');"></div>
+{% endblock %}
+
 {% block content %}
 <div style="max-width: 960px; margin: 2rem auto; width: 100%;">
   <div class="auth-card" style="display: grid; grid-template-columns: 1.1fr 1fr; padding: 0; overflow: hidden;">

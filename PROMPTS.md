@@ -200,3 +200,23 @@
   - `my_documents.html` & `shared_with_me.html`: Integrated empty state SVGs.
 * **Verification:**
   - Executed `python -m pytest -v`: All 27 tests passed in 57.85s with 0 regressions.
+
+---
+
+## Log Entry 10: Immersive Thematic Background Imagery & Frosted Glass Design System Across All Pages
+* **Date & Timestamp:** 2026-10-24 14:53 IST
+* **Goal:** Implement an immersive, high-craft dark mode theme with dedicated thematic background imagery for every individual webpage while preserving maximum legibility, zero distractions, and strict compliance with design systems like Linear, Supabase, and Stripe.
+* **Thematic Imagery & Page Mapping:**
+  1. `app/static/images/bg_dashboard.jpg` — Ambient holographic cyber defense operations room background, applied to **Overview Dashboard** (`/documents/dashboard`) and **User Profile** (`/auth/profile`).
+  2. `app/static/images/bg_vault.jpg` — Deep obsidian physical security vault enclosure with holographic data shields, applied to **My Documents** (`/documents/my-documents`) and **404 Resource Not Found** error page.
+  3. `app/static/images/bg_network.jpg` — Interconnected holographic peer nodes with cryptographic laser conduits, applied to **Shared With Me** (`/documents/shared-with-me`), **Manage Document Access** (`/documents/<id>/manage-access`), and **Workspace Members Admin** (`/admin/users`).
+  4. `app/static/images/bg_audit.jpg` — Cascading streams of cryptographic hashes, verified checkmarks, and immutable ledger blocks, applied to **Security Audit Trail** (`/admin/audit-logs`), **403 Access Denied**, **400 Bad Request**, and **500 Internal Error** pages.
+  5. `app/static/images/trustvault_hero.jpg` — Flagship obsidian vault core render, applied to **Sign In** (`/auth/login`).
+  6. `app/static/images/trustvault_features.jpg` — Cryptographic document slabs and permission nodes, applied to **Upload Document** (`/documents/upload`) and **Create Organization Vault** (`/auth/register`).
+* **Design System & Contrast Architecture:**
+  - **Ambient Dual-Layer System:** In `base.html`, every page utilizes a fixed `.page-bg-layer` (opacity: 0.20-0.22, contrast-boosted) coupled with a smooth dark radial vignette `.page-bg-vignette` (`radial-gradient(ellipse at 50% 20%, rgba(8, 11, 15, 0.4) 0%, rgba(8, 11, 15, 0.85) 65%, #080B0F 100%)`).
+  - **Glassmorphic Cards:** Upgraded `.card`, `.stat-card`, and `.auth-card` with frosted glass (`background: rgba(14, 19, 27, 0.78); backdrop-filter: blur(20px);`), hairline borders (`rgba(255, 255, 255, 0.10)`), and hairline inner rim highlights (`0 0 0 1px rgba(255, 255, 255, 0.03)`).
+  - **Enhanced Micro-Interactions:** Table hover states refined to `rgba(255, 255, 255, 0.04)`, dropzone inputs with backdrop-blur, and monospace badges ensuring instantaneous readability.
+* **Verification:**
+  - Full automated Pytest suite executed: 27/27 tests passed cleanly in 31.33s with 0 warnings or failures.
+

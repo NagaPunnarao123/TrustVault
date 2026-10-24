@@ -93,6 +93,34 @@ body {
   overflow-x: hidden;
 }
 
+/* Ambient Page Background System */
+.page-bg-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 0.22;
+  filter: contrast(1.15) brightness(0.85);
+  transition: opacity 0.4s ease;
+}
+
+.page-bg-vignette {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 20%, rgba(7, 10, 14, 0.45) 0%, rgba(7, 10, 14, 0.90) 70%, #070A0E 100%);
+}
+
 /* Subtle background illumination effect */
 body::before {
   content: '';
@@ -277,11 +305,13 @@ body::before {
    Cards & Surfaces
    ========================================================================== */
 .card {
-  background: var(--bg-surface);
+  background: rgba(14, 19, 27, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
   padding: 1.75rem;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(255, 255, 255, 0.03);
   margin-bottom: 1.75rem;
   position: relative;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -321,16 +351,18 @@ body::before {
 }
 
 .stat-card {
-  background: var(--bg-surface);
+  background: rgba(14, 19, 27, 0.76);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   padding: 1.35rem 1.5rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm), 0 0 0 1px rgba(255, 255, 255, 0.02);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stat-card::before {
@@ -567,7 +599,7 @@ select.form-control {
 }
 
 .table tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .table tbody tr:last-child td {
@@ -671,11 +703,13 @@ select.form-control {
 }
 
 .auth-card {
-  background: var(--bg-surface);
+  background: rgba(14, 19, 27, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
   padding: 2.25rem;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.03);
   position: relative;
   overflow: hidden;
 }

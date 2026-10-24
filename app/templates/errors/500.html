@@ -2,6 +2,10 @@
 
 {% block title %}Server Error (500) — TrustVault{% endblock %}
 
+{% block page_bg %}
+  <div class="page-bg-layer" style="background-image: url('{{ url_for('static', filename='images/bg_audit.jpg') }}');"></div>
+{% endblock %}
+
 {% block content %}
 <div class="auth-wrapper" style="text-align: center;">
   <div class="auth-card" style="padding: 3rem 2rem;">

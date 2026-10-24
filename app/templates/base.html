@@ -11,7 +11,13 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
+
+  <!-- Ambient Page Background Layers -->
+  {% block page_bg %}
+    <div class="page-bg-layer" style="background-image: url('{{ url_for('static', filename='images/trustvault_hero.jpg') }}');"></div>
+  {% endblock %}
+  <div class="page-bg-vignette"></div>
 
   <!-- Top Navigation (Glassmorphic) -->
   <nav class="navbar">
